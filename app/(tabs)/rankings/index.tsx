@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useRankingsStore } from '../../../store/rankingsStore';
 import RankingCard from '../../../components/RankingCard';
 import { useTheme } from '../../../constants/theme';
@@ -43,6 +44,12 @@ export default function Rankings() {
           </View>
         }
       />
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/(tabs)/rankings/nuevo-ranking')}
+      >
+        <Ionicons name="add" size={28} color="#fff" />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -67,4 +74,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptySubtext: {},
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#534AB7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
+  },
 });

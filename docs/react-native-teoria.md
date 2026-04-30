@@ -83,3 +83,11 @@ FlatList, el componente nativo de React Native, tiene un problema conocido con l
 FlashList de Shopify lo resuelve con un reciclaje más agresivo. En lugar de destruir y recrear componentes al salir del viewport, los reutiliza directamente cambiando solo sus datos. Esto reduce drásticamente el trabajo del hilo de JavaScript.
 
 La propiedad `estimatedItemSize` le indica a FlashList cuánto espacio ocupará cada elemento antes de renderizarlo. Cuanto más preciso sea el valor, menos recálculos de layout necesita hacer y mejor es el rendimiento resultante.
+
+## Persistencia y rehidratación del store
+
+Cuando la app arranca, Zustand no tiene datos en memoria — el store empieza vacío. El middleware `persist` arranca una operación asíncrona para leer los datos guardados en AsyncStorage y cargarlos en el store. Este proceso se llama rehidratación.
+
+Mientras la rehidratación no termina, el store devuelve el estado inicial (arrays vacíos), lo que puede causar un parpadeo donde la app muestra "No tienes rankings todavía" aunque haya datos guardados.
+
+Para evitarlo, Zustand expone `useRankingsStore.persist.hasHydrated()`.

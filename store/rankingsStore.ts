@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ranking } from '../types';
 
 interface RankingsStore {
@@ -9,24 +11,32 @@ interface RankingsStore {
   toggleFavorite: (id: string) => void;
 }
 
-export const useRankingsStore = create<RankingsStore>((set) => ({
-  rankings: [],
-  addRanking: (ranking) =>
-    set((state) => ({ rankings: [...state.rankings, ranking] })),
-  updateRanking: (id, updated) =>
-    set((state) => ({
-      rankings: state.rankings.map((r) =>
-        r.id === id ? { ...r, ...updated } : r
-      ),
-    })),
-  deleteRanking: (id) =>
-    set((state) => ({
-      rankings: state.rankings.filter((r) => r.id !== id),
-    })),
-  toggleFavorite: (id) =>
-    set((state) => ({
-      rankings: state.rankings.map((r) =>
-        r.id === id ? { ...r, isFavorite: !r.isFavorite } : r
-      ),
-    })),
-}));
+export const useRankingsStore = create<RankingsStore>()(
+  persist(
+    (set) => ({
+      rankings: [],
+      addRanking: (ranking) =>
+        set((state) => ({ rankings: [...state.rankings, ranking] })),
+      updateRanking: (id, updated) =>
+        set((state) => ({
+          rankings: state.rankings.map((r) =>
+            r.id === id ? { ...r, ...updated } : r
+          ),
+        })),
+      deleteRanking: (id) =>
+        set((state) => ({
+          rankings: state.rankings.filter((r) => r.id !== id),
+        })),
+      toggleFavorite: (id) =>
+        set((state) => ({
+          rankings: state.rankings.map((r) =>
+            r.id === id ? { ...r, isFavorite: !r.isFavorite } : r
+          ),
+        })),
+    }),
+    {
+      name: 'top5-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);
