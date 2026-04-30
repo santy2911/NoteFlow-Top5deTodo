@@ -75,3 +75,11 @@ Es la solución nativa de React para compartir estado entre componentes sin pasa
 ### Zustand
 
 Es una librería externa de gestión de estado global. A diferencia de Context API, los componentes solo se re-renderizan cuando cambia exactamente el dato que están leyendo. No necesita providers anidados y la sintaxis es más simple. Es el estándar moderno en proyectos React Native.
+
+## Rendimiento en listas
+
+FlatList, el componente nativo de React Native, tiene un problema conocido con listas largas: recicla los componentes de forma poco eficiente, lo que provoca pantallas en blanco al hacer scroll rápido.
+
+FlashList de Shopify lo resuelve con un reciclaje más agresivo. En lugar de destruir y recrear componentes al salir del viewport, los reutiliza directamente cambiando solo sus datos. Esto reduce drásticamente el trabajo del hilo de JavaScript.
+
+La propiedad `estimatedItemSize` le indica a FlashList cuánto espacio ocupará cada elemento antes de renderizarlo. Cuanto más preciso sea el valor, menos recálculos de layout necesita hacer y mejor es el rendimiento resultante.
