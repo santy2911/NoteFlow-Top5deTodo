@@ -6,6 +6,13 @@ export default function RootLayout() {
     <PaperProvider>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="nuevo-ranking"
+          options={{
+            presentation: 'modal',
+            headerShown: false,
+          }}
+        />
       </Stack>
     </PaperProvider>
   );
