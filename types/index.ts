@@ -8,8 +8,9 @@ export interface Ranking {
   id: string;
   title: string;
   category: string;
-  items: [RankingItem, RankingItem, RankingItem, RankingItem, RankingItem];
+  categoryColor: string;
   isFavorite: boolean;
+  items: [RankingItem, RankingItem, RankingItem, RankingItem, RankingItem];
   createdAt: Date;
   updatedAt: Date;
 }

@@ -61,3 +61,17 @@ Un modal se presenta desde abajo interrumpiendo el flujo actual. Se configura co
 - **Tabs** para la navegación principal porque las tres secciones son independientes y de igual jerarquía.
 - **Stack** para el detalle porque es una pantalla hija de Rankings con relación padre-hijo.
 - **Modal** para la creación porque es una acción transversal que puede lanzarse desde cualquier pestaña.
+
+## Gestión de estado
+
+### useState
+
+Es el estado local de un componente. Solo ese componente puede leerlo y modificarlo. Útil para cosas simples como abrir/cerrar un modal o controlar un input. El problema aparece cuando dos pantallas necesitan los mismos datos — hay que pasar props por varios niveles.
+
+### Context API
+
+Es la solución nativa de React para compartir estado entre componentes sin pasar props. Se crea un contexto, se envuelve la app en un Provider y cualquier componente puede leerlo. El problema es el rendimiento: cuando el contexto cambia, todos los componentes que lo consumen se re-renderizan.
+
+### Zustand
+
+Es una librería externa de gestión de estado global. A diferencia de Context API, los componentes solo se re-renderizan cuando cambia exactamente el dato que están leyendo. No necesita providers anidados y la sintaxis es más simple. Es el estándar moderno en proyectos React Native.
