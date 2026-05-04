@@ -83,12 +83,9 @@ export const borderRadius = {
 
 
 export function useTheme() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
   return {
-    isDark,
-    colors: isDark ? colors.dark : colors.light,
+    isDark: true,
+    colors: colors.dark,
     categories: colors.categories,
     typography,
     spacing,
