@@ -28,7 +28,8 @@ export default function Rankings() {
       const matchSearch =
         search === '' ||
         r.title.toLowerCase().includes(search.toLowerCase()) ||
-        r.category.toLowerCase().includes(search.toLowerCase());
+        r.category.toLowerCase().includes(search.toLowerCase()) ||
+        r.items.some((item) => item.text.toLowerCase().includes(search.toLowerCase()));
       const matchCategory = activeCategory === null || r.category === activeCategory;
       return matchSearch && matchCategory;
     });

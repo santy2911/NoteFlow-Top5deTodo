@@ -27,10 +27,12 @@ const rankingSchema = z.object({
 });
 
 const CATEGORY_COLORS: Record<string, string> = {
-  música: '#534AB7',
-  peliculas: '#E85D75',
-  películas: '#E85D75',
-  comida: '#F59E42',
+  música: '#7c3aed',
+  peliculas: '#e11d48',
+  series: '#f6ff00',
+  comida: '#d97706',
+  deporte: '#059669',
+  videojuegos: '#2563eb',
 };
 
 function getCategoryColor(category: string): string {

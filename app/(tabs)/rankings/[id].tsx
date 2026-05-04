@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
@@ -49,49 +49,54 @@ export default function RankingDetail() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.barraColor, { backgroundColor: ranking.categoryColor }]} />
 
       <TouchableOpacity style={styles.volver} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={22} color="#fff" />
+        <Ionicons name="arrow-back" size={20} color="#fff" />
         <Text style={styles.volverText}>Volver</Text>
       </TouchableOpacity>
 
-      <Text style={styles.titulo}>{ranking.title}</Text>
+      <View style={styles.card}>
+        <View style={[styles.barraColor, { backgroundColor: ranking.categoryColor }]} />
 
-      <View style={[styles.badge, { backgroundColor: ranking.categoryColor + '33' }]}>
-        <Text style={[styles.badgeText, { color: ranking.categoryColor }]}>
-          {ranking.category}
-        </Text>
-      </View>
-
-      <View style={styles.items}>
-        {ranking.items.map((item) => (
-          <View key={item.id} style={styles.itemRow}>
-            <View style={styles.numeroBadge}>
-              <Text style={styles.numeroText}>{item.position}</Text>
-            </View>
-            <Text style={styles.itemText}>{item.text}</Text>
+        <ScrollView contentContainerStyle={styles.cardContent}>
+          <Text style={styles.titulo}>{ranking.title}</Text>
+          <View style={[styles.badge, { backgroundColor: ranking.categoryColor + '33' }]}>
+            <Text style={[styles.badgeText, { color: ranking.categoryColor }]}>
+              {ranking.category}
+            </Text>
           </View>
-        ))}
+
+          <View style={styles.items}>
+            {ranking.items.map((item) => (
+              <View key={item.id} style={styles.itemRow}>
+                <View style={[styles.numeroBadge, { backgroundColor: ranking.categoryColor }]}>
+                  <Text style={styles.numeroText}>{item.position}</Text>
+                </View>
+                <Text style={styles.itemText}>{item.text}</Text>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+
+        <View style={styles.acciones}>
+          <TouchableOpacity style={styles.boton} onPress={handleCopiar}>
+            <Ionicons name="copy-outline" size={22} color="#fff" />
+            <Text style={styles.botonText}>Copiar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.boton}
+            onPress={() => router.push(`/(tabs)/rankings/nuevo-ranking?id=${id}`)}
+          >
+            <Ionicons name="pencil-outline" size={22} color="#fff" />
+            <Text style={styles.botonText}>Editar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.boton, styles.botonEliminar]} onPress={handleEliminar}>
+            <Ionicons name="trash-outline" size={22} color="#e11d48" />
+            <Text style={[styles.botonText, { color: '#e11d48' }]}>Eliminar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <View style={styles.acciones}>
-        <TouchableOpacity style={styles.boton} onPress={handleCopiar}>
-          <Ionicons name="copy-outline" size={20} color="#fff" />
-          <Text style={styles.botonText}>Copiar</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.boton}
-          onPress={() => router.push(`/(tabs)/rankings/nuevo-ranking?id=${id}`)}
-        >
-          <Ionicons name="pencil-outline" size={20} color="#fff" />
-          <Text style={styles.botonText}>Editar</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.boton, styles.botonEliminar]} onPress={handleEliminar}>
-          <Ionicons name="trash-outline" size={20} color="#E85D75" />
-          <Text style={[styles.botonText, { color: '#E85D75' }]}>Eliminar</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -99,68 +104,75 @@ export default function RankingDetail() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1A1A1A',
-    padding: 20,
-  },
-  barraColor: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 4,
+    backgroundColor: '#0f0f1a',
+    paddingHorizontal: 16,
+    paddingBottom: 24,
   },
   volver: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 52,
-    marginBottom: 24,
+    marginTop: 56,
+    marginBottom: 16,
     gap: 6,
   },
   volverText: {
     color: '#fff',
     fontSize: 16,
   },
+  card: {
+    flex: 1,
+    backgroundColor: '#1a1a2e',
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  barraColor: {
+    height: 6,
+    width: '100%',
+  },
+  cardContent: {
+    padding: 20,
+    paddingBottom: 12,
+  },
   titulo: {
     color: '#fff',
     fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 12,
+    marginBottom: 10,
+    marginTop: 8,
   },
   badge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 20,
-    marginBottom: 28,
+    marginBottom: 24,
   },
   badgeText: {
     fontSize: 13,
     fontWeight: '600',
   },
   items: {
-    gap: 12,
-    marginBottom: 40,
+    gap: 10,
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#242424',
+    backgroundColor: '#0f0f1a',
     borderRadius: 12,
     padding: 14,
     gap: 14,
   },
   numeroBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#534AB7',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
   },
   numeroText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 15,
+    fontSize: 16,
   },
   itemText: {
     color: '#fff',
@@ -168,25 +180,28 @@ const styles = StyleSheet.create({
   },
   acciones: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#2a2a4a',
   },
   boton: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#242424',
-    borderRadius: 10,
-    padding: 14,
+    backgroundColor: '#0f0f1a',
+    borderRadius: 12,
+    paddingVertical: 14,
     gap: 6,
   },
   botonEliminar: {
     borderWidth: 1,
-    borderColor: '#E85D75',
+    borderColor: '#e11d48',
   },
   botonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
   errorText: {
