@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { Ranking } from '../types/index';
 
 interface RankingCardProps {
@@ -17,7 +18,10 @@ export default function RankingCard({ ranking, onPress, onToggleFavorite }: Rank
         <View style={styles.header}>
           <Text style={styles.title} numberOfLines={1}>{ranking.title}</Text>
           <TouchableOpacity
-            onPress={onToggleFavorite}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onToggleFavorite();
+            }}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Ionicons

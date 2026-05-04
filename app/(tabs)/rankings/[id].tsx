@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useRankingsStore } from '../../../store/rankingsStore';
+import * as Haptics from 'expo-haptics';
 
 export default function RankingDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,6 +30,7 @@ export default function RankingDetail() {
           text: 'Eliminar',
           style: 'destructive',
           onPress: () => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
             deleteRanking(id);
             router.back();
           },

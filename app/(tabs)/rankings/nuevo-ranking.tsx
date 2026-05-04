@@ -9,7 +9,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { z } from 'zod';
 import { useRankingsStore } from '../../../store/rankingsStore';
 import { Ranking, RankingItem } from '../../../types';
@@ -40,11 +40,17 @@ function getCategoryColor(category: string): string {
 
 export default function NuevoRanking() {
   const router = useRouter();
-  const addRanking = useRankingsStore((state) => state.addRanking);
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { rankings, addRanking, updateRanking } = useRankingsStore();
 
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('');
-  const [items, setItems] = useState<string[]>(['', '', '', '', '']);
+  const rankingExistente = id ? rankings.find((r) => r.id === id) : null;
+  const esEdicion = !!rankingExistente;
+
+  const [title, setTitle] = useState(rankingExistente?.title ?? '');
+  const [category, setCategory] = useState(rankingExistente?.category ?? '');
+  const [items, setItems] = useState<string[]>(
+    rankingExistente ? rankingExistente.items.map((i) => i.text) : ['', '', '', '', '']
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const updateItem = (index: number, value: string) => {
@@ -76,18 +82,28 @@ export default function NuevoRanking() {
       })
     ) as [RankingItem, RankingItem, RankingItem, RankingItem, RankingItem];
 
-    const newRanking: Ranking = {
-      id: Date.now().toString(),
-      title: title.trim(),
-      category: category.trim(),
-      categoryColor: getCategoryColor(category),
-      isFavorite: false,
-      items: rankingItems,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    if (esEdicion) {
+      updateRanking(id, {
+        title: title.trim(),
+        category: category.trim(),
+        categoryColor: getCategoryColor(category),
+        items: rankingItems,
+        updatedAt: new Date(),
+      });
+    } else {
+      const newRanking: Ranking = {
+        id: Date.now().toString(),
+        title: title.trim(),
+        category: category.trim(),
+        categoryColor: getCategoryColor(category),
+        isFavorite: false,
+        items: rankingItems,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      addRanking(newRanking);
+    }
 
-    addRanking(newRanking);
     router.back();
   };
 
@@ -105,7 +121,7 @@ export default function NuevoRanking() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.titulo}>Nuevo ranking</Text>
+        <Text style={styles.titulo}>{esEdicion ? 'Editar ranking' : 'Nuevo ranking'}</Text>
 
         <Text style={styles.label}>Título</Text>
         <TextInput
@@ -149,7 +165,9 @@ export default function NuevoRanking() {
             <Text style={styles.botonCancelarText}>Cancelar</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.botonGuardar} onPress={handleGuardar}>
-            <Text style={styles.botonGuardarText}>Crear ranking</Text>
+            <Text style={styles.botonGuardarText}>
+              {esEdicion ? 'Guardar cambios' : 'Crear ranking'}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
