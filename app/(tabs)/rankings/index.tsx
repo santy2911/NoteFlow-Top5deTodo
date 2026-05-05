@@ -8,40 +8,32 @@ import RankingCard from '../../../components/RankingCard';
 import { useTheme } from '../../../constants/theme';
 import { Ranking } from '../../../types/index';
 
-const List = FlashList as any;
+const Lista = FlashList as any;
 
 export default function Rankings() {
   const router = useRouter();
   const { colors, typography } = useTheme();
   const { rankings, toggleFavorite } = useRankingsStore();
 
-  const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null);
 
-  const categories = useMemo(() => {
-    const unique = new Set(rankings.map((r) => r.category));
-    return Array.from(unique);
+  const categorias = useMemo(() => {
+    const unicas = new Set(rankings.map((r) => r.category));
+    return Array.from(unicas);
   }, [rankings]);
 
-  const filtered = useMemo(() => {
+  const filtrados = useMemo(() => {
     return rankings.filter((r) => {
-      const matchSearch =
-        search === '' ||
-        r.title.toLowerCase().includes(search.toLowerCase()) ||
-        r.category.toLowerCase().includes(search.toLowerCase()) ||
-        r.items.some((item) => item.text.toLowerCase().includes(search.toLowerCase()));
-      const matchCategory = activeCategory === null || r.category === activeCategory;
-      return matchSearch && matchCategory;
+      const coincideBusqueda =
+        busqueda === '' ||
+        r.title.toLowerCase().includes(busqueda.toLowerCase()) ||
+        r.category.toLowerCase().includes(busqueda.toLowerCase()) ||
+        r.items.some((item) => item.text.toLowerCase().includes(busqueda.toLowerCase()));
+      const coincideCategoria = categoriaActiva === null || r.category === categoriaActiva;
+      return coincideBusqueda && coincideCategoria;
     });
-  }, [rankings, search, activeCategory]);
-
-  const renderItem = ({ item }: { item: Ranking }) => (
-    <RankingCard
-      ranking={item}
-      onPress={() => router.push(`/rankings/${item.id}`)}
-      onToggleFavorite={() => toggleFavorite(item.id)}
-    />
-  );
+  }, [rankings, busqueda, categoriaActiva]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -55,17 +47,17 @@ export default function Rankings() {
           style={styles.searchInput}
           placeholder="Buscar rankings..."
           placeholderTextColor="#555"
-          value={search}
-          onChangeText={setSearch}
+          value={busqueda}
+          onChangeText={setBusqueda}
         />
-        {search !== '' && (
-          <TouchableOpacity onPress={() => setSearch('')}>
+        {busqueda !== '' && (
+          <TouchableOpacity onPress={() => setBusqueda('')}>
             <Ionicons name="close-circle" size={18} color="#666" />
           </TouchableOpacity>
         )}
       </View>
 
-      {categories.length > 0 && (
+      {categorias.length > 0 && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -73,20 +65,20 @@ export default function Rankings() {
           contentContainerStyle={styles.pillsContent}
         >
           <TouchableOpacity
-            style={[styles.pill, activeCategory === null && styles.pillActive]}
-            onPress={() => setActiveCategory(null)}
+            style={[styles.pill, categoriaActiva === null && styles.pillActive]}
+            onPress={() => setCategoriaActiva(null)}
           >
-            <Text style={[styles.pillText, activeCategory === null && styles.pillTextActive]}>
+            <Text style={[styles.pillText, categoriaActiva === null && styles.pillTextActive]}>
               Todas
             </Text>
           </TouchableOpacity>
-          {categories.map((cat) => (
+          {categorias.map((cat) => (
             <TouchableOpacity
               key={cat}
-              style={[styles.pill, activeCategory === cat && styles.pillActive]}
-              onPress={() => setActiveCategory(activeCategory === cat ? null : cat)}
+              style={[styles.pill, categoriaActiva === cat && styles.pillActive]}
+              onPress={() => setCategoriaActiva(categoriaActiva === cat ? null : cat)}
             >
-              <Text style={[styles.pillText, activeCategory === cat && styles.pillTextActive]}>
+              <Text style={[styles.pillText, categoriaActiva === cat && styles.pillTextActive]}>
                 {cat}
               </Text>
             </TouchableOpacity>
@@ -94,19 +86,25 @@ export default function Rankings() {
         </ScrollView>
       )}
 
-      <List
-        data={filtered}
-        renderItem={renderItem}
+      <Lista
+        data={filtrados}
+        renderItem={({ item }: { item: Ranking }) => (
+          <RankingCard
+            ranking={item}
+            onPress={() => router.push(`/rankings/${item.id}`)}
+            onToggleFavorite={() => toggleFavorite(item.id)}
+          />
+        )}
         estimatedItemSize={160}
         keyExtractor={(item: Ranking) => item.id}
         contentContainerStyle={{ paddingBottom: 100 }}
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={[styles.emptyText, { color: colors.text.primary, fontSize: typography.sizes.lg }]}>
-              {search || activeCategory ? 'Sin resultados' : 'No tienes rankings todavía'}
+              {busqueda || categoriaActiva ? 'Sin resultados' : 'No tienes rankings todavía'}
             </Text>
             <Text style={[styles.emptySubtext, { color: colors.text.secondary, fontSize: typography.sizes.sm }]}>
-              {search || activeCategory ? 'Prueba con otros filtros' : 'Pulsa + para crear el primero'}
+              {busqueda || categoriaActiva ? 'Prueba con otros filtros' : 'Pulsa + para crear el primero'}
             </Text>
           </View>
         }

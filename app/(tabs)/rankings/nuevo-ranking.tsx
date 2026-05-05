@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { useRankingsStore } from '../../../store/rankingsStore';
 import { Ranking, RankingItem } from '../../../types';
 
-const rankingSchema = z.object({
+const esquemaRanking = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres'),
   category: z.string().min(1, 'La categoría no puede estar vacía'),
   items: z
@@ -26,18 +26,18 @@ const rankingSchema = z.object({
     ),
 });
 
-const CATEGORY_COLORS: Record<string, string> = {
+const COLORES_CATEGORIA: Record<string, string> = {
   música: '#7c3aed',
-  peliculas: '#e11d48',
+  películas: '#e11d48',
   series: '#f6ff00',
   comida: '#d97706',
   deporte: '#059669',
   videojuegos: '#2563eb',
 };
 
-function getCategoryColor(category: string): string {
-  const key = category.toLowerCase().trim();
-  return CATEGORY_COLORS[key] ?? '#6B7280';
+function obtenerColor(categoria: string): string {
+  const clave = categoria.toLowerCase().trim();
+  return COLORES_CATEGORIA[clave] ?? '#6B7280';
 }
 
 export default function NuevoRanking() {
@@ -48,33 +48,33 @@ export default function NuevoRanking() {
   const rankingExistente = id ? rankings.find((r) => r.id === id) : null;
   const esEdicion = !!rankingExistente;
 
-  const [title, setTitle] = useState(rankingExistente?.title ?? '');
-  const [category, setCategory] = useState(rankingExistente?.category ?? '');
+  const [titulo, setTitulo] = useState(rankingExistente?.title ?? '');
+  const [categoria, setCategoria] = useState(rankingExistente?.category ?? '');
   const [items, setItems] = useState<string[]>(
     rankingExistente ? rankingExistente.items.map((i) => i.text) : ['', '', '', '', '']
   );
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errores, setErrores] = useState<Record<string, string>>({});
 
-  const updateItem = (index: number, value: string) => {
-    const updated = [...items];
-    updated[index] = value;
-    setItems(updated);
+  const actualizarItem = (index: number, valor: string) => {
+    const copia = [...items];
+    copia[index] = valor;
+    setItems(copia);
   };
 
-  const handleGuardar = () => {
-    const result = rankingSchema.safeParse({ title, category, items });
+  const guardar = () => {
+    const result = esquemaRanking.safeParse({ title: titulo, category: categoria, items });
 
     if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
+      const nuevosErrores: Record<string, string> = {};
       result.error.issues.forEach((err) => {
-        const field = err.path[0]?.toString() ?? 'items';
-        fieldErrors[field] = err.message;
+        const campo = err.path[0]?.toString() ?? 'items';
+        nuevosErrores[campo] = err.message;
       });
-      setErrors(fieldErrors);
+      setErrores(nuevosErrores);
       return;
     }
 
-    setErrors({});
+    setErrores({});
 
     const rankingItems: [RankingItem, RankingItem, RankingItem, RankingItem, RankingItem] = items.map(
       (text, index) => ({
@@ -86,30 +86,26 @@ export default function NuevoRanking() {
 
     if (esEdicion) {
       updateRanking(id, {
-        title: title.trim(),
-        category: category.trim(),
-        categoryColor: getCategoryColor(category),
+        title: titulo.trim(),
+        category: categoria.trim(),
+        categoryColor: obtenerColor(categoria),
         items: rankingItems,
         updatedAt: new Date(),
       });
     } else {
-      const newRanking: Ranking = {
+      const nuevoRanking: Ranking = {
         id: Date.now().toString(),
-        title: title.trim(),
-        category: category.trim(),
-        categoryColor: getCategoryColor(category),
+        title: titulo.trim(),
+        category: categoria.trim(),
+        categoryColor: obtenerColor(categoria),
         isFavorite: false,
         items: rankingItems,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      addRanking(newRanking);
+      addRanking(nuevoRanking);
     }
 
-    router.back();
-  };
-
-  const handleCancelar = () => {
     router.back();
   };
 
@@ -127,23 +123,23 @@ export default function NuevoRanking() {
 
         <Text style={styles.label}>Título</Text>
         <TextInput
-          style={[styles.input, errors.title ? styles.inputError : null]}
-          placeholder="Ej: Mejores álbumes de los 90"
+          style={[styles.input, errores.title ? styles.inputError : null]}
+          placeholder="Ej: Películas favoritas, Mejores canciones..."
           placeholderTextColor="#666"
-          value={title}
-          onChangeText={setTitle}
+          value={titulo}
+          onChangeText={setTitulo}
         />
-        {errors.title ? <Text style={styles.error}>{errors.title}</Text> : null}
+        {errores.title ? <Text style={styles.error}>{errores.title}</Text> : null}
 
         <Text style={styles.label}>Categoría</Text>
         <TextInput
-          style={[styles.input, errors.category ? styles.inputError : null]}
+          style={[styles.input, errores.category ? styles.inputError : null]}
           placeholder="Ej: Música, Películas, Comida..."
           placeholderTextColor="#666"
-          value={category}
-          onChangeText={setCategory}
+          value={categoria}
+          onChangeText={setCategoria}
         />
-        {errors.category ? <Text style={styles.error}>{errors.category}</Text> : null}
+        {errores.category ? <Text style={styles.error}>{errores.category}</Text> : null}
 
         <Text style={styles.label}>Top 5</Text>
         {items.map((item, index) => (
@@ -156,17 +152,17 @@ export default function NuevoRanking() {
               placeholder={`Posición ${index + 1}`}
               placeholderTextColor="#666"
               value={item}
-              onChangeText={(value) => updateItem(index, value)}
+              onChangeText={(valor) => actualizarItem(index, valor)}
             />
           </View>
         ))}
-        {errors.items ? <Text style={styles.error}>{errors.items}</Text> : null}
+        {errores.items ? <Text style={styles.error}>{errores.items}</Text> : null}
 
         <View style={styles.botonesRow}>
-          <TouchableOpacity style={styles.botonCancelar} onPress={handleCancelar}>
+          <TouchableOpacity style={styles.botonCancelar} onPress={() => router.back()}>
             <Text style={styles.botonCancelarText}>Cancelar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.botonGuardar} onPress={handleGuardar}>
+          <TouchableOpacity style={styles.botonGuardar} onPress={guardar}>
             <Text style={styles.botonGuardarText}>
               {esEdicion ? 'Guardar cambios' : 'Crear ranking'}
             </Text>

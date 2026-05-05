@@ -4,90 +4,83 @@ import { useRankingsStore } from '../../store/rankingsStore';
 export default function Estadisticas() {
   const rankings = useRankingsStore((s) => s.rankings);
 
-  // Métricas
   const totalRankings = rankings.length;
   const totalFavoritos = rankings.filter((r) => r.isFavorite).length;
   const totalItems = rankings.length * 5;
   const categorias = [...new Set(rankings.map((r) => r.category))];
-  const totalCategorias = categorias.length;
 
-  // Rankings por categoría para el gráfico
   const porCategoria = categorias.map((cat) => ({
-    name: cat,
-    count: rankings.filter((r) => r.category === cat).length,
+    nombre: cat,
+    cantidad: rankings.filter((r) => r.category === cat).length,
     color: rankings.find((r) => r.category === cat)?.categoryColor ?? '#534AB7',
   }));
-  const maxCount = Math.max(...porCategoria.map((c) => c.count), 1);
+  const maxCantidad = Math.max(...porCategoria.map((c) => c.cantidad), 1);
 
-  // Ítem más repetido
-  const allItems = rankings.flatMap((r) => r.items.map((i) => i.text));
+  const todosLosItems = rankings.flatMap((r) => r.items.map((i) => i.text));
   const frecuencia: Record<string, number> = {};
-  allItems.forEach((text) => {
+  todosLosItems.forEach((text) => {
     frecuencia[text] = (frecuencia[text] ?? 0) + 1;
   });
-  const topItem = Object.entries(frecuencia).sort((a, b) => b[1] - a[1])[0];
+  const itemTop = Object.entries(frecuencia).sort((a, b) => b[1] - a[1])[0];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Estadísticas</Text>
+      <Text style={styles.titulo}>Estadísticas</Text>
 
-      {/* Metric cards */}
       <View style={styles.grid}>
-        <MetricCard label="Rankings totales" value={totalRankings} />
-        <MetricCard label="Favoritos" value={totalFavoritos} />
-        <MetricCard label="Ítems totales" value={totalItems} />
-        <MetricCard label="Categorías" value={totalCategorias} />
+        <TarjetaMetrica label="Rankings totales" valor={totalRankings} />
+        <TarjetaMetrica label="Favoritos" valor={totalFavoritos} />
+        <TarjetaMetrica label="Ítems totales" valor={totalItems} />
+        <TarjetaMetrica label="Categorías" valor={categorias.length} />
       </View>
 
-      {/* Gráfico por categoría */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Rankings por categoría</Text>
+        <Text style={styles.cardTitulo}>Rankings por categoría</Text>
         {porCategoria.length === 0 ? (
-          <Text style={styles.empty}>Sin datos aún</Text>
+          <Text style={styles.vacio}>Sin datos aún</Text>
         ) : (
           porCategoria.map((cat) => (
-            <View key={cat.name} style={styles.barRow}>
-              <Text style={styles.barLabel}>{cat.name}</Text>
-              <View style={styles.barTrack}>
+            <View key={cat.nombre} style={styles.barraFila}>
+              <Text style={styles.barraLabel}>{cat.nombre}</Text>
+              <View style={styles.barraTrack}>
                 <View
                   style={[
-                    styles.barFill,
+                    styles.barraRelleno,
                     {
-                      width: `${(cat.count / maxCount) * 100}%`,
+                      width: `${(cat.cantidad / maxCantidad) * 100}%`,
                       backgroundColor: cat.color,
                     },
                   ]}
                 />
               </View>
-              <Text style={styles.barCount}>{cat.count}</Text>
+              <Text style={styles.barraCantidad}>{cat.cantidad}</Text>
             </View>
           ))
         )}
       </View>
 
-      {/* Ítem más repetido */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Ítem más repetido</Text>
-        {topItem ? (
+        <Text style={styles.cardTitulo}>Ítem más repetido</Text>
+        {itemTop ? (
           <>
-            <Text style={styles.topItemText}>{topItem[0]}</Text>
-            <Text style={styles.topItemSub}>
-              Aparece en {topItem[1]} {topItem[1] === 1 ? 'ranking' : 'rankings'}
+            <Text style={styles.itemTopTexto}>{itemTop[0]}</Text>
+            <Text style={styles.itemTopSub}>
+              Aparece en {itemTop[1]} {itemTop[1] === 1 ? 'ranking' : 'rankings'}
             </Text>
           </>
         ) : (
-          <Text style={styles.empty}>Sin datos aún</Text>
+          <Text style={styles.vacio}>Sin datos aún</Text>
         )}
       </View>
     </ScrollView>
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: number }) {
+function TarjetaMetrica({ label, valor }: { label: string; valor: number }) {
   return (
-    <View style={styles.metricCard}>
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricLabel}>{label}</Text>
+    <View style={styles.tarjeta}>
+      <Text style={styles.tarjetaValor}>{valor}</Text>
+      <Text style={styles.tarjetaLabel}>{label}</Text>
     </View>
   );
 }
@@ -103,7 +96,7 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     gap: 16,
   },
-  title: {
+  titulo: {
     color: '#fff',
     fontSize: 28,
     fontWeight: 'bold',
@@ -114,18 +107,18 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 12,
   },
-  metricCard: {
+  tarjeta: {
     backgroundColor: '#242424',
     borderRadius: 12,
     padding: 16,
     width: '47%',
   },
-  metricValue: {
+  tarjetaValor: {
     color: '#fff',
     fontSize: 32,
     fontWeight: 'bold',
   },
-  metricLabel: {
+  tarjetaLabel: {
     color: '#888',
     fontSize: 13,
     marginTop: 4,
@@ -136,48 +129,48 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
-  cardTitle: {
+  cardTitulo: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
-  barRow: {
+  barraFila: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  barLabel: {
+  barraLabel: {
     color: '#ccc',
     fontSize: 13,
     width: 80,
   },
-  barTrack: {
+  barraTrack: {
     flex: 1,
     height: 8,
     backgroundColor: '#333',
     borderRadius: 4,
     overflow: 'hidden',
   },
-  barFill: {
+  barraRelleno: {
     height: '100%',
     borderRadius: 4,
   },
-  barCount: {
+  barraCantidad: {
     color: '#888',
     fontSize: 13,
     width: 16,
     textAlign: 'right',
   },
-  topItemText: {
+  itemTopTexto: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
   },
-  topItemSub: {
+  itemTopSub: {
     color: '#888',
     fontSize: 13,
   },
-  empty: {
+  vacio: {
     color: '#555',
     fontSize: 14,
   },

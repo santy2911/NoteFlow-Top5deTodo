@@ -7,52 +7,44 @@ import { useRankingsStore } from '../../store/rankingsStore';
 import RankingCard from '../../components/RankingCard';
 import { Ranking } from '../../types/index';
 
-const List = FlashList as any;
+const Lista = FlashList as any;
 
 export default function Favoritos() {
   const router = useRouter();
   const rankings = useRankingsStore((s) => s.rankings);
   const toggleFavorite = useRankingsStore((s) => s.toggleFavorite);
 
-  const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null);
 
   const favoritos = useMemo(() => rankings.filter((r) => r.isFavorite), [rankings]);
 
-  const categories = useMemo(() => {
-    const unique = new Set(favoritos.map((r) => r.category));
-    return Array.from(unique);
+  const categorias = useMemo(() => {
+    const unicas = new Set(favoritos.map((r) => r.category));
+    return Array.from(unicas);
   }, [favoritos]);
 
-  const filtered = useMemo(() => {
+  const filtrados = useMemo(() => {
     return favoritos.filter((r) => {
-      const matchSearch =
-        search === '' ||
-        r.title.toLowerCase().includes(search.toLowerCase()) ||
-        r.category.toLowerCase().includes(search.toLowerCase()) ||
-        r.items.some((item) => item.text.toLowerCase().includes(search.toLowerCase()));
-      const matchCategory = activeCategory === null || r.category === activeCategory;
-      return matchSearch && matchCategory;
+      const coincideBusqueda =
+        busqueda === '' ||
+        r.title.toLowerCase().includes(busqueda.toLowerCase()) ||
+        r.category.toLowerCase().includes(busqueda.toLowerCase()) ||
+        r.items.some((item) => item.text.toLowerCase().includes(busqueda.toLowerCase()));
+      const coincideCategoria = categoriaActiva === null || r.category === categoriaActiva;
+      return coincideBusqueda && coincideCategoria;
     });
-  }, [favoritos, search, activeCategory]);
-
-  const renderItem = ({ item }: { item: Ranking }) => (
-    <RankingCard
-      ranking={item}
-      onPress={() => router.push(`/(tabs)/rankings/${item.id}`)}
-      onToggleFavorite={() => toggleFavorite(item.id)}
-    />
-  );
+  }, [favoritos, busqueda, categoriaActiva]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Favoritos</Text>
+      <Text style={styles.titulo}>Favoritos</Text>
 
       {favoritos.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyIcon}>⭐</Text>
-          <Text style={styles.emptyTitle}>Sin favoritos aún</Text>
-          <Text style={styles.emptySubtitle}>
+          <Text style={styles.emptyTitulo}>Sin favoritos aún</Text>
+          <Text style={styles.emptySubtitulo}>
             Marca un ranking con la estrella para verlo aquí
           </Text>
         </View>
@@ -64,17 +56,17 @@ export default function Favoritos() {
               style={styles.searchInput}
               placeholder="Buscar en favoritos..."
               placeholderTextColor="#555"
-              value={search}
-              onChangeText={setSearch}
+              value={busqueda}
+              onChangeText={setBusqueda}
             />
-            {search !== '' && (
-              <TouchableOpacity onPress={() => setSearch('')}>
+            {busqueda !== '' && (
+              <TouchableOpacity onPress={() => setBusqueda('')}>
                 <Ionicons name="close-circle" size={18} color="#666" />
               </TouchableOpacity>
             )}
           </View>
 
-          {categories.length > 1 && (
+          {categorias.length > 1 && (
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -82,20 +74,20 @@ export default function Favoritos() {
               contentContainerStyle={styles.pillsContent}
             >
               <TouchableOpacity
-                style={[styles.pill, activeCategory === null && styles.pillActive]}
-                onPress={() => setActiveCategory(null)}
+                style={[styles.pill, categoriaActiva === null && styles.pillActive]}
+                onPress={() => setCategoriaActiva(null)}
               >
-                <Text style={[styles.pillText, activeCategory === null && styles.pillTextActive]}>
+                <Text style={[styles.pillText, categoriaActiva === null && styles.pillTextActive]}>
                   Todas
                 </Text>
               </TouchableOpacity>
-              {categories.map((cat) => (
+              {categorias.map((cat) => (
                 <TouchableOpacity
                   key={cat}
-                  style={[styles.pill, activeCategory === cat && styles.pillActive]}
-                  onPress={() => setActiveCategory(activeCategory === cat ? null : cat)}
+                  style={[styles.pill, categoriaActiva === cat && styles.pillActive]}
+                  onPress={() => setCategoriaActiva(categoriaActiva === cat ? null : cat)}
                 >
-                  <Text style={[styles.pillText, activeCategory === cat && styles.pillTextActive]}>
+                  <Text style={[styles.pillText, categoriaActiva === cat && styles.pillTextActive]}>
                     {cat}
                   </Text>
                 </TouchableOpacity>
@@ -103,16 +95,22 @@ export default function Favoritos() {
             </ScrollView>
           )}
 
-          <List
-            data={filtered}
-            renderItem={renderItem}
+          <Lista
+            data={filtrados}
+            renderItem={({ item }: { item: Ranking }) => (
+              <RankingCard
+                ranking={item}
+                onPress={() => router.push(`/(tabs)/rankings/${item.id}`)}
+                onToggleFavorite={() => toggleFavorite(item.id)}
+              />
+            )}
             estimatedItemSize={160}
             keyExtractor={(item: Ranking) => item.id}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={styles.lista}
             ListEmptyComponent={
-              <View style={styles.noResults}>
-                <Text style={styles.noResultsText}>Sin resultados</Text>
-                <Text style={styles.noResultsSub}>Prueba con otros filtros</Text>
+              <View style={styles.sinResultados}>
+                <Text style={styles.sinResultadosText}>Sin resultados</Text>
+                <Text style={styles.sinResultadosSub}>Prueba con otros filtros</Text>
               </View>
             }
           />
@@ -124,8 +122,8 @@ export default function Favoritos() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#1A1A1A', paddingTop: 60 },
-  title: { color: '#fff', fontSize: 28, fontWeight: 'bold', marginBottom: 12, paddingHorizontal: 16 },
-  list: { paddingBottom: 32 },
+  titulo: { color: '#fff', fontSize: 28, fontWeight: 'bold', marginBottom: 12, paddingHorizontal: 16 },
+  lista: { paddingBottom: 32 },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -161,9 +159,9 @@ const styles = StyleSheet.create({
   pillTextActive: { color: '#fff' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
   emptyIcon: { fontSize: 48, marginBottom: 8 },
-  emptyTitle: { color: '#fff', fontSize: 18, fontWeight: '600' },
-  emptySubtitle: { color: '#888', fontSize: 14, textAlign: 'center', paddingHorizontal: 32 },
-  noResults: { alignItems: 'center', paddingTop: 60 },
-  noResultsText: { color: '#fff', fontSize: 16, fontWeight: '600', marginBottom: 6 },
-  noResultsSub: { color: '#888', fontSize: 14 },
+  emptyTitulo: { color: '#fff', fontSize: 18, fontWeight: '600' },
+  emptySubtitulo: { color: '#888', fontSize: 14, textAlign: 'center', paddingHorizontal: 32 },
+  sinResultados: { alignItems: 'center', paddingTop: 60 },
+  sinResultadosText: { color: '#fff', fontSize: 16, fontWeight: '600', marginBottom: 6 },
+  sinResultadosSub: { color: '#888', fontSize: 14 },
 });

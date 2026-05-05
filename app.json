@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "top5detodo",
-    "slug": "top5detodo",
+    "slug": "noteflow-top5detodo",
     "scheme": "top5detodo",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -30,6 +30,19 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "76992a70-89fe-484d-a7e5-7356b5238197"
+      }
+    },
+    "owner": "santy29s-organization",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/76992a70-89fe-484d-a7e5-7356b5238197"
+    }
   }
 }

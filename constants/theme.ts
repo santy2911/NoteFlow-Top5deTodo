@@ -4,8 +4,8 @@ import { useColorScheme } from 'react-native';
 export const colors = {
 
   categories: {
-    musica: '#7c3aed',
-    peliculas: '#e11d48',
+    música: '#7c3aed',
+    películas: '#e11d48',
     series: '#f6ff00',
     comida: '#d97706',
     deporte: '#059669',

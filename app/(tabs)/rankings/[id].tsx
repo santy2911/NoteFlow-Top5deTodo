@@ -5,7 +5,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useRankingsStore } from '../../../store/rankingsStore';
 import * as Haptics from 'expo-haptics';
 
-export default function RankingDetail() {
+export default function DetalleRanking() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { rankings, deleteRanking } = useRankingsStore();
@@ -20,7 +20,7 @@ export default function RankingDetail() {
     );
   }
 
-  const handleEliminar = () => {
+  const eliminar = () => {
     Alert.alert(
       'Eliminar ranking',
       `¿Seguro que quieres eliminar "${ranking.title}"?`,
@@ -39,7 +39,7 @@ export default function RankingDetail() {
     );
   };
 
-  const handleCopiar = async () => {
+  const copiar = async () => {
     const texto = `${ranking.title}\n${ranking.items
       .map((item) => `${item.position}. ${item.text}`)
       .join('\n')}`;
@@ -49,7 +49,6 @@ export default function RankingDetail() {
 
   return (
     <View style={styles.container}>
-
       <TouchableOpacity style={styles.volver} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={20} color="#fff" />
         <Text style={styles.volverText}>Volver</Text>
@@ -79,7 +78,7 @@ export default function RankingDetail() {
         </ScrollView>
 
         <View style={styles.acciones}>
-          <TouchableOpacity style={styles.boton} onPress={handleCopiar}>
+          <TouchableOpacity style={styles.boton} onPress={copiar}>
             <Ionicons name="copy-outline" size={22} color="#fff" />
             <Text style={styles.botonText}>Copiar</Text>
           </TouchableOpacity>
@@ -90,13 +89,12 @@ export default function RankingDetail() {
             <Ionicons name="pencil-outline" size={22} color="#fff" />
             <Text style={styles.botonText}>Editar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.boton, styles.botonEliminar]} onPress={handleEliminar}>
+          <TouchableOpacity style={[styles.boton, styles.botonEliminar]} onPress={eliminar}>
             <Ionicons name="trash-outline" size={22} color="#e11d48" />
             <Text style={[styles.botonText, { color: '#e11d48' }]}>Eliminar</Text>
           </TouchableOpacity>
         </View>
       </View>
-
     </View>
   );
 }
