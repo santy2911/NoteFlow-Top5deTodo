@@ -12,7 +12,6 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { z } from 'zod';
 import { useRankingsStore } from '../../../store/rankingsStore';
-import { Ranking, RankingItem } from '../../../types';
 
 const esquemaRanking = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres'),
@@ -25,20 +24,6 @@ const esquemaRanking = z.object({
       'Añade al menos un item'
     ),
 });
-
-const COLORES_CATEGORIA: Record<string, string> = {
-  música: '#7c3aed',
-  películas: '#e11d48',
-  series: '#f6ff00',
-  comida: '#d97706',
-  deporte: '#059669',
-  videojuegos: '#2563eb',
-};
-
-function obtenerColor(categoria: string): string {
-  const clave = categoria.toLowerCase().trim();
-  return COLORES_CATEGORIA[clave] ?? '#6B7280';
-}
 
 export default function NuevoRanking() {
   const router = useRouter();
@@ -61,7 +46,7 @@ export default function NuevoRanking() {
     setItems(copia);
   };
 
-  const guardar = () => {
+  const guardar = async () => {
     const result = esquemaRanking.safeParse({ title: titulo, category: categoria, items });
 
     if (!result.success) {
@@ -76,37 +61,26 @@ export default function NuevoRanking() {
 
     setErrores({});
 
-    const rankingItems: [RankingItem, RankingItem, RankingItem, RankingItem, RankingItem] = items.map(
-      (text, index) => ({
-        id: `${Date.now()}-${index}`,
-        text: text.trim(),
-        position: index + 1,
-      })
-    ) as [RankingItem, RankingItem, RankingItem, RankingItem, RankingItem];
-
-    if (esEdicion) {
-      updateRanking(id, {
-        title: titulo.trim(),
-        category: categoria.trim(),
-        categoryColor: obtenerColor(categoria),
-        items: rankingItems,
-        updatedAt: new Date(),
-      });
-    } else {
-      const nuevoRanking: Ranking = {
-        id: Date.now().toString(),
-        title: titulo.trim(),
-        category: categoria.trim(),
-        categoryColor: obtenerColor(categoria),
-        isFavorite: false,
-        items: rankingItems,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      addRanking(nuevoRanking);
+    try {
+      if (esEdicion) {
+        await updateRanking(id, {
+          title: titulo.trim(),
+          category: categoria.trim(),
+        });
+      } else {
+        await addRanking({
+          title: titulo.trim(),
+          category: categoria.trim(),
+          items: items.map((text, index) => ({
+            position: index + 1,
+            title: text.trim(),
+          })),
+        });
+      }
+      router.back();
+    } catch {
+      setErrores({ general: 'Error al guardar el ranking' });
     }
-
-    router.back();
   };
 
   return (
@@ -157,6 +131,7 @@ export default function NuevoRanking() {
           </View>
         ))}
         {errores.items ? <Text style={styles.error}>{errores.items}</Text> : null}
+        {errores.general ? <Text style={styles.error}>{errores.general}</Text> : null}
 
         <View style={styles.botonesRow}>
           <TouchableOpacity style={styles.botonCancelar} onPress={() => router.back()}>
