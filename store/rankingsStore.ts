@@ -36,24 +36,23 @@ export const useRankingsStore = create<RankingsStore>((set, get) => ({
   },
 
   addRanking: async (data) => {
-    set({ isLoading: true, error: null });
-    try {
-      const newRanking = await createRanking(data);
-      set((state) => ({ rankings: [newRanking, ...state.rankings], isLoading: false }));
-    } catch (err) {
-      set({ isLoading: false, error: (err as Error).message });
-      throw err;
-    }
-  },
+  set({ isLoading: true, error: null });
+  try {
+    await createRanking(data);
+    const rankings = await getRankings();
+    set({ rankings, isLoading: false });
+  } catch (err) {
+    set({ isLoading: false, error: (err as Error).message });
+    throw err;
+  }
+},
 
   updateRanking: async (id, data) => {
     set({ isLoading: true, error: null });
     try {
-      const updated = await updateRanking(id, data);
-      set((state) => ({
-        rankings: state.rankings.map((r) => (r.id === id ? updated : r)),
-        isLoading: false,
-      }));
+      await updateRanking(id, data);
+      const rankings = await getRankings();
+      set({ rankings, isLoading: false });
     } catch (err) {
       set({ isLoading: false, error: (err as Error).message });
       throw err;
@@ -76,15 +75,15 @@ export const useRankingsStore = create<RankingsStore>((set, get) => ({
     if (!ranking) return;
     set((state) => ({
       rankings: state.rankings.map((r) =>
-        r.id === id ? { ...r, isFavorite: !r.isFavorite } : r
+        r.id === id ? { ...r, is_favorite: !r.is_favorite } : r
       ),
     }));
     try {
-      await updateRanking(id, { isFavorite: !ranking.isFavorite });
+      await updateRanking(id, { is_favorite: !ranking.is_favorite });
     } catch (err) {
       set((state) => ({
         rankings: state.rankings.map((r) =>
-          r.id === id ? { ...r, isFavorite: ranking.isFavorite } : r
+          r.id === id ? { ...r, is_favorite: ranking.is_favorite } : r
         ),
         error: (err as Error).message,
       }));

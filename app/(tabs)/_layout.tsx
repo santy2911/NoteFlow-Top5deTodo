@@ -38,8 +38,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen name="rankings/[id]" options={{ href: null }} />
-      <Tabs.Screen name="rankings/nuevo-ranking" options={{ href: null }} />
     </Tabs>
   );
 }

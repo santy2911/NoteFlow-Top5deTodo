@@ -5,18 +5,21 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000/api';
 export interface CreateRankingInput {
   title: string;
   category: string;
-  isFavorite?: boolean;
+  is_favorite?: boolean;
   items: Array<{
     position: number;
-    title: string;
-    description?: string;
+    name: string;
   }>;
 }
 
 export interface UpdateRankingInput {
   title?: string;
   category?: string;
-  isFavorite?: boolean;
+  is_favorite?: boolean;
+  items?: Array<{
+    position: number;
+    name: string;
+  }>;
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {

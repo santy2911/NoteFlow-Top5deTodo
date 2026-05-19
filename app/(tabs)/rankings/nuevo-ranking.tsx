@@ -36,7 +36,7 @@ export default function NuevoRanking() {
   const [titulo, setTitulo] = useState(rankingExistente?.title ?? '');
   const [categoria, setCategoria] = useState(rankingExistente?.category ?? '');
   const [items, setItems] = useState<string[]>(
-    rankingExistente ? rankingExistente.items.map((i) => i.text) : ['', '', '', '', '']
+    rankingExistente ? (rankingExistente.items ?? []).map((i) => i.name) : ['', '', '', '', '']
   );
   const [errores, setErrores] = useState<Record<string, string>>({});
 
@@ -63,22 +63,17 @@ export default function NuevoRanking() {
 
     try {
       if (esEdicion) {
-        await updateRanking(id, {
-          title: titulo.trim(),
-          category: categoria.trim(),
-        });
-      } else {
-        await addRanking({
-          title: titulo.trim(),
-          category: categoria.trim(),
-          items: items.map((text, index) => ({
-            position: index + 1,
-            title: text.trim(),
-          })),
-        });
-      }
+      await updateRanking(id, {
+        title: titulo.trim(),
+        category: categoria.trim(),
+        items: items.map((text, index) => ({
+          position: index + 1,
+          name: text.trim(),
+        })),
+      });
+    }
       router.back();
-    } catch {
+    } catch (error) {
       setErrores({ general: 'Error al guardar el ranking' });
     }
   };

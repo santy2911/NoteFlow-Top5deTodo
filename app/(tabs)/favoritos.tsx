@@ -17,7 +17,7 @@ export default function Favoritos() {
   const [busqueda, setBusqueda] = useState('');
   const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null);
 
-  const favoritos = useMemo(() => rankings.filter((r) => r.isFavorite), [rankings]);
+  const favoritos = useMemo(() => rankings.filter((r) => r.is_favorite), [rankings]);
 
   const categorias = useMemo(() => {
     const unicas = new Set(favoritos.map((r) => r.category));
@@ -30,7 +30,7 @@ export default function Favoritos() {
         busqueda === '' ||
         r.title.toLowerCase().includes(busqueda.toLowerCase()) ||
         r.category.toLowerCase().includes(busqueda.toLowerCase()) ||
-        r.items.some((item) => item.text.toLowerCase().includes(busqueda.toLowerCase()));
+        r.items.some((item) => item.name.toLowerCase().includes(busqueda.toLowerCase()));
       const coincideCategoria = categoriaActiva === null || r.category === categoriaActiva;
       return coincideBusqueda && coincideCategoria;
     });
@@ -136,16 +136,8 @@ const styles = StyleSheet.create({
   },
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, color: '#fff', fontSize: 14 },
-  pillsScroll: {
-    marginBottom: 12,
-    maxHeight: 36,
-    flexGrow: 0,
-  },
-  pillsContent: {
-    paddingHorizontal: 16,
-    gap: 8,
-    alignItems: 'center',
-  },
+  pillsScroll: { marginBottom: 12, maxHeight: 36, flexGrow: 0 },
+  pillsContent: { paddingHorizontal: 16, gap: 8, alignItems: 'center' },
   pill: {
     paddingHorizontal: 14,
     paddingVertical: 6,
