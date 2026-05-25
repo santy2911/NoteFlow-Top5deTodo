@@ -3,8 +3,14 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Ranking } from '../types/index';
+import { colors } from '../constants/theme';
 
-const COLOR_ACENTO = '#534AB7';
+const COLOR_FALLBACK = '#534AB7';
+
+function getCategoryColor(category: string): string {
+  const key = category.toLowerCase() as keyof typeof colors.categories;
+  return colors.categories[key] ?? COLOR_FALLBACK;
+}
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -13,9 +19,11 @@ interface RankingCardProps {
 }
 
 export default function RankingCard({ ranking, onPress, onToggleFavorite }: RankingCardProps) {
+  const color = getCategoryColor(ranking.category);
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      <View style={[styles.colorBar, { backgroundColor: COLOR_ACENTO }]} />
+      <View style={[styles.colorBar, { backgroundColor: color }]} />
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.title} numberOfLines={1}>{ranking.title}</Text>
@@ -34,8 +42,8 @@ export default function RankingCard({ ranking, onPress, onToggleFavorite }: Rank
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.badge, { backgroundColor: COLOR_ACENTO + '33' }]}>
-          <Text style={[styles.badgeText, { color: COLOR_ACENTO }]}>
+        <View style={[styles.badge, { backgroundColor: color + '33' }]}>
+          <Text style={[styles.badgeText, { color }]}>
             {ranking.category}
           </Text>
         </View>

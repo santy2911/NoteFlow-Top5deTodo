@@ -46,23 +46,23 @@ export default function NuevoRanking() {
     setItems(copia);
   };
 
-  const guardar = async () => {
-    const result = esquemaRanking.safeParse({ title: titulo, category: categoria, items });
+const guardar = async () => {
+  const result = esquemaRanking.safeParse({ title: titulo, category: categoria, items });
 
-    if (!result.success) {
-      const nuevosErrores: Record<string, string> = {};
-      result.error.issues.forEach((err) => {
-        const campo = err.path[0]?.toString() ?? 'items';
-        nuevosErrores[campo] = err.message;
-      });
-      setErrores(nuevosErrores);
-      return;
-    }
+  if (!result.success) {
+    const nuevosErrores: Record<string, string> = {};
+    result.error.issues.forEach((err) => {
+      const campo = err.path[0]?.toString() ?? 'items';
+      nuevosErrores[campo] = err.message;
+    });
+    setErrores(nuevosErrores);
+    return;
+  }
 
-    setErrores({});
+  setErrores({});
 
-    try {
-      if (esEdicion) {
+  try {
+    if (esEdicion) {
       await updateRanking(id, {
         title: titulo.trim(),
         category: categoria.trim(),
@@ -71,12 +71,21 @@ export default function NuevoRanking() {
           name: text.trim(),
         })),
       });
+    } else {
+      await addRanking({
+        title: titulo.trim(),
+        category: categoria.trim(),
+        items: items.map((text, index) => ({
+          position: index + 1,
+          name: text.trim(),
+        })),
+      });
     }
-      router.back();
-    } catch (error) {
-      setErrores({ general: 'Error al guardar el ranking' });
-    }
-  };
+    router.back();
+  } catch (error) {
+    setErrores({ general: 'Error al guardar el ranking' });
+  }
+};
 
   return (
     <KeyboardAvoidingView

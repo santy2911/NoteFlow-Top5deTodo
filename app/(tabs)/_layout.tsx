@@ -12,6 +12,15 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
+        name="notas"
+        options={{
+          title: 'Notas',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="document-text" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="rankings"
         options={{
           title: 'Rankings',

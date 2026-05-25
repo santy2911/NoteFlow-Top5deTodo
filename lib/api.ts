@@ -1,4 +1,4 @@
-import { Ranking } from '@/types';
+import { Ranking, Nota, Bloque } from '@/types';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000/api';
 
@@ -20,6 +20,30 @@ export interface UpdateRankingInput {
     position: number;
     name: string;
   }>;
+}
+
+export interface CreateNotaInput {
+  titulo: string;
+  contenido: string;
+  tiene_checklist?: boolean;
+  imagen_uri?: string | null;
+  checklist?: Array<{
+    texto: string;
+    completado: boolean;
+  }>;
+  bloques?: Bloque[];
+}
+
+export interface UpdateNotaInput {
+  titulo?: string;
+  contenido?: string;
+  tiene_checklist?: boolean;
+  imagen_uri?: string | null;
+  checklist?: Array<{
+    texto: string;
+    completado: boolean;
+  }>;
+  bloques?: Bloque[];
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -61,4 +85,30 @@ export async function updateRanking(id: string, data: UpdateRankingInput): Promi
 
 export async function deleteRanking(id: string): Promise<void> {
   return apiFetch<void>(`/rankings/${id}`, { method: 'DELETE' });
+}
+
+export async function getNotas(): Promise<Nota[]> {
+  return apiFetch<Nota[]>('/notas');
+}
+
+export async function getNota(id: string): Promise<Nota> {
+  return apiFetch<Nota>(`/notas/${id}`);
+}
+
+export async function createNota(data: CreateNotaInput): Promise<Nota> {
+  return apiFetch<Nota>('/notas', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateNota(id: string, data: UpdateNotaInput): Promise<Nota> {
+  return apiFetch<Nota>(`/notas/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteNota(id: string): Promise<void> {
+  return apiFetch<void>(`/notas/${id}`, { method: 'DELETE' });
 }

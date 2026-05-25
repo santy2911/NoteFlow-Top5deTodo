@@ -4,8 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useRankingsStore } from '../../../store/rankingsStore';
 import * as Haptics from 'expo-haptics';
+import { colors } from '../../../constants/theme';
 
-const COLOR_ACENTO = '#534AB7';
+const COLOR_FALLBACK = '#534AB7';
+
+function getCategoryColor(category: string): string {
+  const key = category.toLowerCase() as keyof typeof colors.categories;
+  return colors.categories[key] ?? COLOR_FALLBACK;
+}
 
 export default function DetalleRanking() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,6 +27,8 @@ export default function DetalleRanking() {
       </View>
     );
   }
+
+  const color = getCategoryColor(ranking.category);
 
   const eliminar = () => {
     Alert.alert(
@@ -57,12 +65,12 @@ export default function DetalleRanking() {
       </TouchableOpacity>
 
       <View style={styles.card}>
-        <View style={[styles.barraColor, { backgroundColor: COLOR_ACENTO }]} />
+        <View style={[styles.barraColor, { backgroundColor: color }]} />
 
         <ScrollView contentContainerStyle={styles.cardContent}>
           <Text style={styles.titulo}>{ranking.title}</Text>
-          <View style={[styles.badge, { backgroundColor: COLOR_ACENTO + '33' }]}>
-            <Text style={[styles.badgeText, { color: COLOR_ACENTO }]}>
+          <View style={[styles.badge, { backgroundColor: color + '33' }]}>
+            <Text style={[styles.badgeText, { color }]}>
               {ranking.category}
             </Text>
           </View>
@@ -70,7 +78,7 @@ export default function DetalleRanking() {
           <View style={styles.items}>
             {(ranking.items ?? []).map((item) => (
               <View key={item.id} style={styles.itemRow}>
-                <View style={[styles.numeroBadge, { backgroundColor: COLOR_ACENTO }]}>
+                <View style={[styles.numeroBadge, { backgroundColor: color }]}>
                   <Text style={styles.numeroText}>{item.position}</Text>
                 </View>
                 <Text style={styles.itemText}>{item.name}</Text>
