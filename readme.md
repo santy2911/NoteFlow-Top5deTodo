@@ -9,7 +9,7 @@ Aplicación móvil desarrollada con React Native y Expo que permite organizar tu
 
 | Despliegue | URL |
 |------------|-----|
-| Preview Expo | [Abrir en Expo](https://expo.dev/preview/update?message=NoteFlow-Top5deTodo&updateRuntimeVersion=1.0.0&createdAt=2026-05-04T13%3A21%3A55.260Z&slug=exp&projectId=76992a70-89fe-484d-a7e5-7356b5238197&group=437e5d3d-b064-457c-bc95-010244c00428) |
+| Preview Expo | [Abrir en Expo](https://expo.dev/preview/update?message=NoteFlow-Top5deTodo&updateRuntimeVersion=1.0.0&createdAt=2026-05-25T14%3A00%3A23.555Z&slug=exp&projectId=76992a70-89fe-484d-a7e5-7356b5238197&group=c44ea6ab-351d-455a-99ef-9c072e9e7cc3) |
 | Trello | [Tablero del proyecto](https://trello.com/b/gbZFPsx6/fullstack-project) |
 
 ---
