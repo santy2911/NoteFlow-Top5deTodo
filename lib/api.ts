@@ -6,6 +6,7 @@ export interface CreateRankingInput {
   title: string;
   category: string;
   is_favorite?: boolean;
+  is_pinned?: boolean;
   items: Array<{
     position: number;
     name: string;
@@ -16,6 +17,7 @@ export interface UpdateRankingInput {
   title?: string;
   category?: string;
   is_favorite?: boolean;
+  is_pinned?: boolean;
   items?: Array<{
     position: number;
     name: string;
@@ -26,6 +28,7 @@ export interface CreateNotaInput {
   titulo: string;
   contenido: string;
   tiene_checklist?: boolean;
+  is_pinned?: boolean;
   imagen_uri?: string | null;
   checklist?: Array<{
     texto: string;
@@ -38,6 +41,7 @@ export interface UpdateNotaInput {
   titulo?: string;
   contenido?: string;
   tiene_checklist?: boolean;
+  is_pinned?: boolean;
   imagen_uri?: string | null;
   checklist?: Array<{
     texto: string;

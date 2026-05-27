@@ -6,11 +6,13 @@ import { FlashList } from '@shopify/flash-list';
 import { useRankingsStore } from '../../store/rankingsStore';
 import RankingCard from '../../components/RankingCard';
 import { Ranking } from '../../types/index';
+import { useTheme } from '../../constants/theme';
 
 const Lista = FlashList as any;
 
 export default function Favoritos() {
   const router = useRouter();
+  const { colors } = useTheme();
   const rankings = useRankingsStore((s) => s.rankings);
   const toggleFavorite = useRankingsStore((s) => s.toggleFavorite);
 
@@ -37,7 +39,7 @@ export default function Favoritos() {
   }, [favoritos, busqueda, categoriaActiva]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={styles.titulo}>Favoritos</Text>
 
       {favoritos.length === 0 ? (

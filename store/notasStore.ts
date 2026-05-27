@@ -17,7 +17,14 @@ interface NotasStore {
   agregarNota: (data: CreateNotaInput) => Promise<void>;
   actualizarNota: (id: string, data: UpdateNotaInput) => Promise<void>;
   eliminarNota: (id: string) => Promise<void>;
+  togglePinned: (id: string) => Promise<void>;
 }
+
+const sortNotas = (notas: Nota[]) =>
+  [...notas].sort((a, b) => {
+    if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
 export const useNotasStore = create<NotasStore>((set, get) => ({
   notas: [],
@@ -28,7 +35,7 @@ export const useNotasStore = create<NotasStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const notas = await getNotas();
-      set({ notas, isLoading: false });
+      set({ notas: sortNotas(notas), isLoading: false });
     } catch (err) {
       set({ isLoading: false, error: (err as Error).message });
     }
@@ -39,7 +46,7 @@ export const useNotasStore = create<NotasStore>((set, get) => ({
     try {
       await createNota(data);
       const notas = await getNotas();
-      set({ notas, isLoading: false });
+      set({ notas: sortNotas(notas), isLoading: false });
     } catch (err) {
       set({ isLoading: false, error: (err as Error).message });
       throw err;
@@ -51,7 +58,7 @@ export const useNotasStore = create<NotasStore>((set, get) => ({
     try {
       await updateNota(id, data);
       const notas = await getNotas();
-      set({ notas, isLoading: false });
+      set({ notas: sortNotas(notas), isLoading: false });
     } catch (err) {
       set({ isLoading: false, error: (err as Error).message });
       throw err;
@@ -66,6 +73,31 @@ export const useNotasStore = create<NotasStore>((set, get) => ({
     } catch (err) {
       set({ notas: previous, error: (err as Error).message });
       throw err;
+    }
+  },
+
+  togglePinned: async (id) => {
+    const nota = get().notas.find((n) => n.id === id);
+    if (!nota) return;
+    const nextPinned = !nota.is_pinned;
+    set((state) => ({
+      notas: sortNotas(
+        state.notas.map((n) =>
+          n.id === id ? { ...n, is_pinned: nextPinned } : n
+        )
+      ),
+    }));
+    try {
+      await updateNota(id, { is_pinned: nextPinned });
+    } catch (err) {
+      set((state) => ({
+        notas: sortNotas(
+          state.notas.map((n) =>
+            n.id === id ? { ...n, is_pinned: nota.is_pinned } : n
+          )
+        ),
+        error: (err as Error).message,
+      }));
     }
   },
 }));

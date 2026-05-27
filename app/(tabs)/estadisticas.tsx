@@ -1,9 +1,11 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRankingsStore } from '../../store/rankingsStore';
+import { useTheme } from '../../constants/theme';
 
 const COLOR_ACENTO = '#534AB7';
 
 export default function Estadisticas() {
+  const { colors } = useTheme();
   const rankings = useRankingsStore((s) => s.rankings);
 
   const totalRankings = rankings.length;
@@ -26,7 +28,10 @@ export default function Estadisticas() {
   const itemTop = Object.entries(frecuencia).sort((a, b) => b[1] - a[1])[0];
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
+    >
       <Text style={styles.titulo}>Estadísticas</Text>
 
       <View style={styles.grid}>

@@ -18,7 +18,14 @@ interface RankingsStore {
   updateRanking: (id: string, data: UpdateRankingInput) => Promise<void>;
   deleteRanking: (id: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
+  togglePinned: (id: string) => Promise<void>;
 }
+
+const sortRankings = (rankings: Ranking[]) =>
+  [...rankings].sort((a, b) => {
+    if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
 export const useRankingsStore = create<RankingsStore>((set, get) => ({
   rankings: [],
@@ -29,7 +36,7 @@ export const useRankingsStore = create<RankingsStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const rankings = await getRankings();
-      set({ rankings, isLoading: false });
+      set({ rankings: sortRankings(rankings), isLoading: false });
     } catch (err) {
       set({ isLoading: false, error: (err as Error).message });
     }
@@ -40,7 +47,7 @@ export const useRankingsStore = create<RankingsStore>((set, get) => ({
   try {
     await createRanking(data);
     const rankings = await getRankings();
-    set({ rankings, isLoading: false });
+    set({ rankings: sortRankings(rankings), isLoading: false });
   } catch (err) {
     set({ isLoading: false, error: (err as Error).message });
     throw err;
@@ -52,7 +59,7 @@ export const useRankingsStore = create<RankingsStore>((set, get) => ({
     try {
       await updateRanking(id, data);
       const rankings = await getRankings();
-      set({ rankings, isLoading: false });
+      set({ rankings: sortRankings(rankings), isLoading: false });
     } catch (err) {
       set({ isLoading: false, error: (err as Error).message });
       throw err;
@@ -84,6 +91,31 @@ export const useRankingsStore = create<RankingsStore>((set, get) => ({
       set((state) => ({
         rankings: state.rankings.map((r) =>
           r.id === id ? { ...r, is_favorite: ranking.is_favorite } : r
+        ),
+        error: (err as Error).message,
+      }));
+    }
+  },
+
+  togglePinned: async (id) => {
+    const ranking = get().rankings.find((r) => r.id === id);
+    if (!ranking) return;
+    const nextPinned = !ranking.is_pinned;
+    set((state) => ({
+      rankings: sortRankings(
+        state.rankings.map((r) =>
+          r.id === id ? { ...r, is_pinned: nextPinned } : r
+        )
+      ),
+    }));
+    try {
+      await updateRanking(id, { is_pinned: nextPinned });
+    } catch (err) {
+      set((state) => ({
+        rankings: sortRankings(
+          state.rankings.map((r) =>
+            r.id === id ? { ...r, is_pinned: ranking.is_pinned } : r
+          )
         ),
         error: (err as Error).message,
       }));

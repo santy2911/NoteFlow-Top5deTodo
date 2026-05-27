@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { Alert, View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useRankingsStore } from '../../../store/rankingsStore';
 import RankingCard from '../../../components/RankingCard';
+import SwipeableActions from '../../../components/SwipeableActions';
 import { useTheme } from '../../../constants/theme';
 import { Ranking } from '../../../types/index';
 
@@ -13,7 +14,7 @@ const Lista = FlashList as any;
 export default function Rankings() {
   const router = useRouter();
   const { colors, typography } = useTheme();
-  const { rankings, toggleFavorite } = useRankingsStore();
+  const { rankings, toggleFavorite, togglePinned, deleteRanking } = useRankingsStore();
 
   const [busqueda, setBusqueda] = useState('');
   const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null);
@@ -34,6 +35,17 @@ export default function Rankings() {
       return coincideBusqueda && coincideCategoria;
     });
   }, [rankings, busqueda, categoriaActiva]);
+
+  const confirmarEliminar = (ranking: Ranking) => {
+    Alert.alert('Eliminar ranking', `¿Seguro que quieres eliminar "${ranking.title}"?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: () => deleteRanking(ranking.id),
+      },
+    ]);
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -89,11 +101,18 @@ export default function Rankings() {
       <Lista
         data={filtrados}
         renderItem={({ item }: { item: Ranking }) => (
-          <RankingCard
-            ranking={item}
-            onPress={() => router.push(`/rankings/${item.id}`)}
-            onToggleFavorite={() => toggleFavorite(item.id)}
-          />
+          <SwipeableActions
+            pinned={item.is_pinned}
+            onTogglePinned={() => togglePinned(item.id)}
+            onDelete={() => confirmarEliminar(item)}
+          >
+            <RankingCard
+              ranking={item}
+              onPress={() => router.push(`/rankings/${item.id}`)}
+              onToggleFavorite={() => toggleFavorite(item.id)}
+              style={styles.cardSwipe}
+            />
+          </SwipeableActions>
         )}
         estimatedItemSize={160}
         keyExtractor={(item: Ranking) => item.id}
@@ -122,6 +141,7 @@ export default function Rankings() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#1A1A1A' },
+  cardSwipe: { marginHorizontal: 0, marginBottom: 0 },
   header: {
     fontWeight: 'bold',
     paddingHorizontal: 16,

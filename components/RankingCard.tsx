@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Ranking } from '../types/index';
@@ -16,17 +16,21 @@ interface RankingCardProps {
   ranking: Ranking;
   onPress: () => void;
   onToggleFavorite: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
-export default function RankingCard({ ranking, onPress, onToggleFavorite }: RankingCardProps) {
+export default function RankingCard({ ranking, onPress, onToggleFavorite, style }: RankingCardProps) {
   const color = getCategoryColor(ranking.category);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={[styles.card, style]} onPress={onPress} activeOpacity={0.8}>
       <View style={[styles.colorBar, { backgroundColor: color }]} />
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.title} numberOfLines={1}>{ranking.title}</Text>
+          {ranking.is_pinned && (
+            <Ionicons name="pin" size={16} color="#A78BFA" style={styles.pinIcon} />
+          )}
           <TouchableOpacity
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -75,6 +79,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: { color: '#fff', fontSize: 16, fontWeight: '600', flex: 1, marginRight: 8 },
+  pinIcon: { marginRight: 8 },
   badge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 8,

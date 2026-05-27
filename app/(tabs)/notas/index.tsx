@@ -1,13 +1,23 @@
 import { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useNotasStore } from '@/store/notasStore';
 import { useTheme } from '@/constants/theme';
 import { Nota } from '@/types';
+import SwipeableActions from '@/components/SwipeableActions';
 
 export default function NotasScreen() {
-  const { notas, isLoading, fetchNotas } = useNotasStore();
+  const { notas, isLoading, fetchNotas, togglePinned, eliminarNota } = useNotasStore();
   const router = useRouter();
   const { colors, typography } = useTheme();
   const [busqueda, setBusqueda] = useState('');
@@ -26,27 +36,46 @@ export default function NotasScreen() {
     );
   });
 
+  const confirmarEliminar = (nota: Nota) => {
+    Alert.alert('Eliminar nota', `Seguro que quieres eliminar "${nota.titulo || 'Sin titulo'}"?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: () => eliminarNota(nota.id),
+      },
+    ]);
+  };
+
   const renderNota = ({ item }: { item: Nota }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => router.push(`/notas/${item.id}`)}
+    <SwipeableActions
+      pinned={item.is_pinned}
+      onTogglePinned={() => togglePinned(item.id)}
+      onDelete={() => confirmarEliminar(item)}
     >
-      <Text style={[styles.titulo, { color: colors.text.primary, fontSize: typography.sizes.lg }]} numberOfLines={1}>
-        {item.titulo || 'Sin título'}
-      </Text>
-      {item.tieneChecklist ? (
-        <Text style={[styles.meta, { color: colors.text.secondary, fontSize: typography.sizes.sm }]}>
-          {item.checklist.filter((i) => i.completado).length}/{item.checklist.length} completados
+      <TouchableOpacity style={styles.card} onPress={() => router.push(`/notas/${item.id}`)}>
+        <View style={styles.tituloFila}>
+          <Text style={[styles.titulo, { color: colors.text.primary, fontSize: typography.sizes.lg }]} numberOfLines={1}>
+            {item.titulo || 'Sin titulo'}
+          </Text>
+          {item.is_pinned && <Ionicons name="pin" size={16} color="#A78BFA" />}
+        </View>
+
+        {item.tieneChecklist ? (
+          <Text style={[styles.meta, { color: colors.text.secondary, fontSize: typography.sizes.sm }]}>
+            {item.checklist.filter((i) => i.completado).length}/{item.checklist.length} completados
+          </Text>
+        ) : (
+          <Text style={[styles.contenido, { color: colors.text.secondary, fontSize: typography.sizes.sm }]} numberOfLines={2}>
+            {item.bloques?.find((b) => b.tipo === 'texto' && b.contenido.trim())?.contenido || 'Nota vacia'}
+          </Text>
+        )}
+
+        <Text style={[styles.fecha, { color: colors.text.muted, fontSize: typography.sizes.xs }]}>
+          {new Date(item.updated_at).toLocaleDateString('es-ES')}
         </Text>
-      ) : (
-        <Text style={[styles.contenido, { color: colors.text.secondary, fontSize: typography.sizes.sm }]} numberOfLines={2}>
-          {item.bloques?.find((b) => b.tipo === 'texto' && b.contenido.trim())?.contenido || 'Nota vacía'}
-        </Text>
-      )}
-      <Text style={[styles.fecha, { color: colors.text.muted, fontSize: typography.sizes.xs }]}>
-        {new Date(item.updated_at).toLocaleDateString('es-ES')}
-      </Text>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </SwipeableActions>
   );
 
   if (isLoading && notas.length === 0) {
@@ -81,11 +110,11 @@ export default function NotasScreen() {
         data={notasFiltradas}
         keyExtractor={(item) => item.id}
         renderItem={renderNota}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100, gap: 12 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={[styles.emptyText, { color: colors.text.primary, fontSize: typography.sizes.lg }]}>
-              {busqueda.length > 0 ? 'Sin resultados' : 'No tienes notas todavía'}
+              {busqueda.length > 0 ? 'Sin resultados' : 'No tienes notas todavia'}
             </Text>
             <Text style={[styles.emptySubtext, { color: colors.text.secondary, fontSize: typography.sizes.sm }]}>
               {busqueda.length > 0 ? 'Prueba con otras palabras' : 'Pulsa + para crear la primera'}
@@ -142,8 +171,14 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 6,
   },
+  tituloFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   titulo: {
     fontWeight: '600',
+    flex: 1,
   },
   contenido: {
     lineHeight: 20,
