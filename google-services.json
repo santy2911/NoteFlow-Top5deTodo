@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "286244852807",
+    "project_id": "noteflow-top5detodo",
+    "storage_bucket": "noteflow-top5detodo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:286244852807:android:aebb33a8077144f73f0d62",
+        "android_client_info": {
+          "package_name": "com.santy2911.top5detodo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCf9NqC9HMopROYogrrtkqTmxmOQM4mLME"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
