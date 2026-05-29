@@ -22,7 +22,7 @@ export default function RootLayout() {
       router.replace('/login');
     } else {
       fetchRankings();
-      router.replace('/(tabs)/rankings');
+      router.replace('/(tabs)/notas');
     }
   }, [usuario]);
 

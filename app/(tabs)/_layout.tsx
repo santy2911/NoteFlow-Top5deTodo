@@ -41,9 +41,9 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="estadisticas"
         options={{
-          title: 'Estadísticas',
+          title: 'Perfil',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart" color={color} size={size} />
+            <Ionicons name="person" color={color} size={size} />
           ),
         }}
       />
