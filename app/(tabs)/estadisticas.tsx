@@ -80,7 +80,6 @@ export default function Estadisticas() {
 
       setPerfil((prev) => prev ? { ...prev, avatarUrl: publicUrl } : prev);
     } catch (e) {
-      console.error('Error subida:', e);
       Alert.alert('Error', 'No se pudo subir la foto');
     } finally {
       setSubiendoFoto(false);
