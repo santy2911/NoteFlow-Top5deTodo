@@ -43,25 +43,36 @@ export const useRankingsStore = create<RankingsStore>((set, get) => ({
   },
 
   addRanking: async (data) => {
-  set({ isLoading: true, error: null });
-  try {
-    await createRanking(data);
-    const rankings = await getRankings();
-    set({ rankings: sortRankings(rankings), isLoading: false });
-  } catch (err) {
-    set({ isLoading: false, error: (err as Error).message });
-    throw err;
-  }
-},
-
-  updateRanking: async (id, data) => {
     set({ isLoading: true, error: null });
     try {
-      await updateRanking(id, data);
-      const rankings = await getRankings();
-      set({ rankings: sortRankings(rankings), isLoading: false });
+      const nuevo = await createRanking(data);
+      set((state) => ({
+        rankings: sortRankings([...state.rankings, nuevo as unknown as Ranking]),
+        isLoading: false,
+      }));
     } catch (err) {
       set({ isLoading: false, error: (err as Error).message });
+      throw err;
+    }
+  },
+
+  updateRanking: async (id, data) => {
+    const previous = get().rankings;
+    set((state) => ({
+      rankings: sortRankings(
+        state.rankings.map((r) => (r.id === id ? { ...r, ...(data as unknown as Partial<Ranking>) } : r))
+      ),
+    }));
+    try {
+      const actualizado = await updateRanking(id, data);
+      set((state) => ({
+        rankings: sortRankings(
+          state.rankings.map((r) => (r.id === id ? (actualizado as unknown as Ranking) : r))
+        ),
+        isLoading: false,
+      }));
+    } catch (err) {
+      set({ rankings: previous, isLoading: false, error: (err as Error).message });
       throw err;
     }
   },

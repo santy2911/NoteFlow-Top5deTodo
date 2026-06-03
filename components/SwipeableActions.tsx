@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { palette } from '../constants/theme';
 
 const ACTION_WIDTH = 72;
 const ACTIONS_WIDTH = ACTION_WIDTH * 2;
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   pinAction: {
-    backgroundColor: '#534AB7',
+    backgroundColor: palette.purple,
   },
   deleteAction: {
     backgroundColor: '#dc2626',
@@ -129,5 +130,7 @@ const styles = StyleSheet.create({
   },
   foreground: {
     borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: palette.card,
   },
 });

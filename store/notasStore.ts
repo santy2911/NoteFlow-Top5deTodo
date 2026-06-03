@@ -44,9 +44,11 @@ export const useNotasStore = create<NotasStore>((set, get) => ({
   agregarNota: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      await createNota(data);
-      const notas = await getNotas();
-      set({ notas: sortNotas(notas), isLoading: false });
+      const nueva = await createNota(data);
+      set((state) => ({
+        notas: sortNotas([...state.notas, nueva as unknown as Nota]),
+        isLoading: false,
+      }));
     } catch (err) {
       set({ isLoading: false, error: (err as Error).message });
       throw err;
@@ -54,13 +56,22 @@ export const useNotasStore = create<NotasStore>((set, get) => ({
   },
 
   actualizarNota: async (id, data) => {
-    set({ isLoading: true, error: null });
+    const previous = get().notas;
+    set((state) => ({
+      notas: sortNotas(
+        state.notas.map((n) => (n.id === id ? { ...n, ...(data as unknown as Partial<Nota>) } : n))
+      ),
+    }));
     try {
-      await updateNota(id, data);
-      const notas = await getNotas();
-      set({ notas: sortNotas(notas), isLoading: false });
+      const actualizada = await updateNota(id, data);
+      set((state) => ({
+        notas: sortNotas(
+          state.notas.map((n) => (n.id === id ? (actualizada as unknown as Nota) : n))
+        ),
+        isLoading: false,
+      }));
     } catch (err) {
-      set({ isLoading: false, error: (err as Error).message });
+      set({ notas: previous, isLoading: false, error: (err as Error).message });
       throw err;
     }
   },

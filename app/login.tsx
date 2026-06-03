@@ -1,14 +1,26 @@
 import { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { Text, TextInput, Button, HelperText } from 'react-native-paper';
+import {
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  TextInput as RNTextInput,
+  Text as RNText,
+} from 'react-native';
+import { Text, Button, HelperText } from 'react-native-paper';
 import { router } from 'expo-router';
 import auth from '@react-native-firebase/auth';
+import { useTheme } from '../constants/theme';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function LoginScreen() {
+  const { colors } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
+  const [verPassword, setVerPassword] = useState(false);
 
   async function handleLogin() {
     if (!email || !password) {
@@ -29,34 +41,56 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.contenedor}
+      style={[styles.contenedor, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.formulario}>
-        <Text variant="headlineMedium" style={styles.titulo}>
-          Iniciar sesión
+        <View style={[styles.logoWrap, { backgroundColor: colors.primary }]}>
+          <RNText style={styles.logoEmoji}>🏆</RNText>
+        </View>
+
+        <Text variant="headlineMedium" style={[styles.titulo, { color: colors.text.primary }]}>
+          Bienvenido de nuevo
+        </Text>
+        <Text style={[styles.subtitulo, { color: colors.text.secondary }]}>
+          Accede a tus rankings
         </Text>
 
-        <TextInput
-          label="Correo electrónico"
+        <RNTextInput
+          placeholder="Correo electrónico"
+          placeholderTextColor={colors.text.muted}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
-          mode="outlined"
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.surface, color: colors.text.primary }]}
         />
 
-        <TextInput
-          label="Contraseña"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          mode="outlined"
-          style={styles.input}
-        />
+        <View style={[styles.inputWrap, { backgroundColor: colors.surface }]}>
+          <RNTextInput
+            placeholder="Contraseña"
+            placeholderTextColor={colors.text.muted}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!verPassword}
+            style={[styles.inputInner, { color: colors.text.primary }]}
+          />
+          <TouchableOpacity onPress={() => setVerPassword(!verPassword)} style={styles.eyeBtn}>
+            <Ionicons
+              name={verPassword ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color={colors.text.muted}
+            />
+          </TouchableOpacity>
+        </View>
 
-        <HelperText type="error" visible={!!error}>
+        <TouchableOpacity style={styles.olvidaste}>
+          <Text style={{ color: colors.primary, fontSize: 13 }}>
+            ¿Olvidaste tu contraseña?
+          </Text>
+        </TouchableOpacity>
+
+        <HelperText type="error" visible={!!error} style={{ color: colors.danger }}>
           {error}
         </HelperText>
 
@@ -66,17 +100,19 @@ export default function LoginScreen() {
           loading={cargando}
           disabled={cargando}
           style={styles.boton}
+          buttonColor={colors.primary}
+          labelStyle={{ fontSize: 16, fontWeight: '600' }}
+          contentStyle={{ paddingVertical: 8 }}
         >
           Entrar
         </Button>
 
-        <Button
-          mode="text"
-          onPress={() => router.push('/registro')}
-          style={styles.boton}
-        >
-          ¿No tienes cuenta? Regístrate
-        </Button>
+        <TouchableOpacity style={styles.linkWrap} onPress={() => router.push('/registro')}>
+          <Text style={{ color: colors.text.secondary, fontSize: 13 }}>
+            ¿No tienes cuenta?{' '}
+            <Text style={{ color: colors.primary, fontSize: 13 }}>Regístrate</Text>
+          </Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -86,19 +122,61 @@ const styles = StyleSheet.create({
   contenedor: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: '#fff',
   },
   formulario: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 28,
+  },
+  logoWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  logoEmoji: {
+    fontSize: 32,
   },
   titulo: {
-    marginBottom: 24,
     fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  subtitulo: {
+    fontSize: 15,
+    marginBottom: 36,
   },
   input: {
-    marginBottom: 12,
+    height: 56,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 15,
+    marginBottom: 14,
+  },
+  inputWrap: {
+    height: 56,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 10,
+  },
+  inputInner: {
+    flex: 1,
+    fontSize: 15,
+  },
+  eyeBtn: {
+    padding: 4,
+  },
+  olvidaste: {
+    alignSelf: 'flex-end',
+    marginBottom: 6,
   },
   boton: {
-    marginTop: 8,
+    marginTop: 10,
+    borderRadius: 30,
+  },
+  linkWrap: {
+    marginTop: 16,
+    alignItems: 'center',
   },
 });

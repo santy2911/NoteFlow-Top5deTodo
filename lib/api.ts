@@ -1,4 +1,5 @@
 import { Ranking, Nota, Bloque } from '@/types';
+import auth from '@react-native-firebase/auth';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000/api';
 
@@ -51,8 +52,14 @@ export interface UpdateNotaInput {
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const usuario = auth().currentUser;
+  const token = usuario ? await usuario.getIdToken() : null;
+
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     ...options,
   });
 

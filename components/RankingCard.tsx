@@ -3,14 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from '
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Ranking } from '../types/index';
-import { colors } from '../constants/theme';
-
-const COLOR_FALLBACK = '#534AB7';
-
-function getCategoryColor(category: string): string {
-  const key = category.toLowerCase() as keyof typeof colors.categories;
-  return colors.categories[key] ?? COLOR_FALLBACK;
-}
+import { palette, getCategoryColor, medalEmojis } from '../constants/theme';
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -21,42 +14,40 @@ interface RankingCardProps {
 
 export default function RankingCard({ ranking, onPress, onToggleFavorite, style }: RankingCardProps) {
   const color = getCategoryColor(ranking.category);
+  const items = ranking.items ?? [];
 
   return (
-    <TouchableOpacity style={[styles.card, style]} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={[styles.card, style]} onPress={onPress} activeOpacity={0.82}>
       <View style={[styles.colorBar, { backgroundColor: color }]} />
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title} numberOfLines={1}>{ranking.title}</Text>
-          {ranking.is_pinned && (
-            <Ionicons name="pin" size={16} color="#A78BFA" style={styles.pinIcon} />
-          )}
+          <View style={styles.titleGroup}>
+            <Text style={styles.title} numberOfLines={1}>{ranking.title}</Text>
+            <View style={[styles.badge, { backgroundColor: color + '33' }]}>
+              <Text style={[styles.badgeText, { color }]}>{ranking.category}</Text>
+            </View>
+          </View>
+          {ranking.is_pinned && <Ionicons name="pin" size={16} color={palette.purpleLight} style={styles.pinIcon} />}
           <TouchableOpacity
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               onToggleFavorite();
             }}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons
               name={ranking.is_favorite ? 'star' : 'star-outline'}
-              size={20}
-              color={ranking.is_favorite ? '#F59E42' : '#666'}
+              size={23}
+              color={ranking.is_favorite ? palette.gold : '#73737e'}
             />
           </TouchableOpacity>
         </View>
-
-        <View style={[styles.badge, { backgroundColor: color + '33' }]}>
-          <Text style={[styles.badgeText, { color }]}>
-            {ranking.category}
-          </Text>
-        </View>
-
-        {(ranking.items ?? []).slice(0, 3).map((item, index) => (
-          <Text key={item.id} style={styles.item} numberOfLines={1}>
-            {index + 1}. {item.name}
+        {items.slice(0, 3).map((item, index) => (
+          <Text key={item.id ?? `item-${index}`} style={styles.item} numberOfLines={1}>
+            {medalEmojis[index]} {item.name}
           </Text>
         ))}
+        {items.length > 3 && <Text style={styles.more}>+{items.length - 3} más...</Text>}
       </View>
     </TouchableOpacity>
   );
@@ -69,24 +60,27 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 12,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#2a2a4a55',
   },
   colorBar: { height: 4, width: '100%' },
-  content: { padding: 16 },
+  content: { padding: 14 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 8,
   },
-  title: { color: '#fff', fontSize: 16, fontWeight: '600', flex: 1, marginRight: 8 },
-  pinIcon: { marginRight: 8 },
+  titleGroup: { flex: 1, gap: 7, marginRight: 10 },
+  title: { color: palette.text, fontSize: 16, fontWeight: '700' },
+  pinIcon: { marginRight: 8, marginTop: 3 },
   badge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 20,
-    marginBottom: 10,
   },
-  badgeText: { fontSize: 12, fontWeight: '500' },
-  item: { color: '#aaa', fontSize: 14, marginBottom: 3 },
+  badgeText: { fontSize: 12, fontWeight: '700' },
+  item: { color: '#c4c1d8', fontSize: 14, marginBottom: 3, lineHeight: 19 },
+  more: { color: palette.textMuted, fontSize: 13, marginTop: 1 },
 });

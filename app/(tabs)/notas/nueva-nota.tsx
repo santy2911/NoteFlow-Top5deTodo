@@ -15,7 +15,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useNotasStore } from '@/store/notasStore';
-import { useTheme } from '@/constants/theme';
+import { palette, useTheme } from '@/constants/theme';
 import { Bloque } from '@/types';
 import { nanoid } from 'nanoid/non-secure';
 
@@ -34,6 +34,8 @@ export default function NuevaNota() {
   const [bloqueActivoId, setBloqueActivoId] = useState<string | null>(null);
 
   const inputsRef = useRef<Record<string, TextInput | null>>({});
+
+  const totalCaracteres = bloques.reduce((acc, b) => acc + b.contenido.length, 0) + titulo.length;
 
   const actualizarBloque = (bloqueId: string, cambios: Partial<Bloque>) => {
     setBloques((prev) =>
@@ -57,7 +59,6 @@ export default function NuevaNota() {
     setBloques((prev) => {
       const idx = prev.findIndex((b) => b.id === bloqueId);
       if (idx === -1) return prev;
-
       const copia = [...prev];
       if (contenidoActual !== undefined) {
         copia[idx] = { ...copia[idx], contenido: contenidoActual };
@@ -72,7 +73,6 @@ export default function NuevaNota() {
     if (!bloqueActivoId) return;
     const bloque = bloques.find((b) => b.id === bloqueActivoId);
     if (!bloque) return;
-
     if (!bloque.esChecklist) {
       actualizarBloque(bloqueActivoId, { esChecklist: true, completado: false });
       enfocarBloque(bloqueActivoId);
@@ -85,7 +85,6 @@ export default function NuevaNota() {
   const crearBloqueAlPulsarEnter = (bloqueId: string, contenidoActual?: string, contenidoNuevo = '') => {
     const bloque = bloques.find((b) => b.id === bloqueId);
     if (!bloque) return;
-
     const nuevo: Bloque = {
       id: nanoid(),
       tipo: 'texto',
@@ -94,18 +93,15 @@ export default function NuevaNota() {
       esChecklist: bloque.esChecklist ?? false,
       completado: bloque.esChecklist ? false : undefined,
     };
-
     insertarBloqueDespues(bloqueId, nuevo, contenidoActual);
   };
 
   const cambiarContenidoBloque = (bloqueId: string, texto: string) => {
     const saltoLineaIndex = texto.indexOf('\n');
-
     if (saltoLineaIndex === -1) {
       actualizarBloque(bloqueId, { contenido: texto });
       return;
     }
-
     const contenidoActual = texto.slice(0, saltoLineaIndex);
     const contenidoNuevo = texto.slice(saltoLineaIndex + 1);
     crearBloqueAlPulsarEnter(bloqueId, contenidoActual, contenidoNuevo);
@@ -126,6 +122,17 @@ export default function NuevaNota() {
     });
   };
 
+
+  const borrarBloqueVacio = (bloqueId: string) => {
+    const index = bloques.findIndex((b) => b.id === bloqueId);
+    if (index <= 0) return;
+    const bloque = bloques[index];
+    if (bloque.contenido.length > 0) return;
+    const anterior = bloques[index - 1];
+    setBloques((prev) => prev.filter((b) => b.id !== bloqueId));
+    setBloqueActivoId(anterior.id);
+    setTimeout(() => inputsRef.current[anterior.id]?.focus(), 50);
+  };
   const abrirGaleria = async () => {
     setMenuImagenVisible(false);
     const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -187,30 +194,34 @@ export default function NuevaNota() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={0}
     >
-      <View style={[styles.cabecera, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={volverANotas}>
-          <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
+      <View style={styles.cabecera}>
+        <TouchableOpacity style={styles.botonVolver} onPress={volverANotas}>
+          <Ionicons name="arrow-back" size={18} color={palette.purpleLight} />
+          <Text style={styles.textoVolver}>
+            Volver
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={guardar}
           disabled={guardando}
-          style={[styles.botonGuardar, { backgroundColor: colors.primary }]}
+          style={styles.botonGuardar}
         >
-          <Text style={[styles.textoGuardar, { fontSize: typography.sizes.sm }]}>
+          <Ionicons name="save-outline" size={15} color="#fff" />
+          <Text style={styles.textoGuardar}>
             {guardando ? 'Guardando...' : 'Guardar'}
           </Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.sm }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: 16 }}>
         <TextInput
-          placeholder="Título"
+          placeholder="Título de la nota..."
           placeholderTextColor={colors.text.muted}
           value={titulo}
           onChangeText={setTitulo}
           style={[
             styles.inputTitulo,
-            { color: colors.text.primary, fontSize: typography.sizes.xl, borderBottomColor: colors.border },
+            { color: colors.text.primary, fontSize: typography.sizes.xxl, borderBottomColor: colors.border },
           ]}
         />
 
@@ -228,28 +239,31 @@ export default function NuevaNota() {
               </TouchableOpacity>
             )}
             <TextInput
-                ref={(r) => { inputsRef.current[bloque.id] = r; }}
-                placeholder="Escribe algo..."
-                placeholderTextColor={colors.text.muted}
-                value={bloque.contenido}
-                onChangeText={(t) => cambiarContenidoBloque(bloque.id, t)}
-                onFocus={() => setBloqueActivoId(bloque.id)}
-                blurOnSubmit={false}
-                returnKeyType="default"
-                multiline
-                style={[
-                  bloque.esChecklist ? styles.inputItem : styles.inputTexto,
-                  {
-                    color: bloque.completado ? colors.text.muted : colors.text.primary,
-                    fontSize: typography.sizes.md,
-                    textDecorationLine: bloque.completado
-                      ? 'line-through'
-                      : bloque.subrayado
-                      ? 'underline'
-                      : 'none',
-                  },
-                ]}
-              />
+              ref={(r) => { inputsRef.current[bloque.id] = r; }}
+              placeholder="Escribe algo..."
+              placeholderTextColor={colors.text.muted}
+              value={bloque.contenido}
+              onChangeText={(t) => cambiarContenidoBloque(bloque.id, t)}
+              onFocus={() => setBloqueActivoId(bloque.id)}
+              onKeyPress={(e) => {
+                if (e.nativeEvent.key === 'Backspace') borrarBloqueVacio(bloque.id);
+              }}
+              blurOnSubmit={false}
+              returnKeyType="default"
+              multiline
+              style={[
+                bloque.esChecklist ? styles.inputItem : styles.inputTexto,
+                {
+                  color: bloque.completado ? colors.text.muted : colors.text.primary,
+                  fontSize: typography.sizes.md,
+                  textDecorationLine: bloque.completado
+                    ? 'line-through'
+                    : bloque.subrayado
+                    ? 'underline'
+                    : 'none',
+                },
+              ]}
+            />
             {bloque.esChecklist && (
               <TouchableOpacity onPress={() => eliminarBloque(bloque.id)}>
                 <Ionicons name="close" size={20} color={colors.text.muted} />
@@ -259,7 +273,7 @@ export default function NuevaNota() {
         ))}
 
         {imagenUri && (
-          <View>
+          <View style={{ marginTop: 12 }}>
             <Image source={{ uri: imagenUri }} style={styles.imagen} resizeMode="cover" />
             <TouchableOpacity
               onPress={() => setImagenUri(null)}
@@ -270,6 +284,12 @@ export default function NuevaNota() {
           </View>
         )}
       </ScrollView>
+
+      <View style={styles.contadorFila}>
+        <Text style={[styles.contadorTexto, { color: colors.text.muted, fontSize: typography.sizes.xs }]}>
+          {totalCaracteres} caracteres
+        </Text>
+      </View>
 
       {menuImagenVisible && (
         <View style={[styles.menuImagen, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -291,27 +311,34 @@ export default function NuevaNota() {
 
       <View style={[styles.barraEdicion, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
         <TouchableOpacity
-          onPress={() => setMenuImagenVisible((prev) => !prev)}
-          style={styles.botonBarra}
+          onPress={toggleSubrayado}
+          style={[styles.botonBarra, bloqueActivo?.subrayado && { backgroundColor: colors.border, borderRadius: 8 }]}
         >
-          <Ionicons name="image-outline" size={24} color={colors.text.secondary} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={toggleSubrayado} style={styles.botonBarra}>
           <Text style={[
             styles.textoSubrayado,
-            {
-              color: bloqueActivo?.subrayado ? colors.primary : colors.text.secondary,
-              fontSize: typography.sizes.lg,
-            },
+            { color: bloqueActivo?.subrayado ? colors.primary : colors.text.secondary, fontSize: typography.sizes.lg },
           ]}>
             S
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={toggleChecklist} style={styles.botonBarra}>
+        <TouchableOpacity
+          onPress={toggleChecklist}
+          style={[styles.botonBarra, bloqueActivo?.esChecklist && { backgroundColor: colors.border, borderRadius: 8 }]}
+        >
           <Ionicons
             name="checkbox-outline"
             size={24}
             color={bloqueActivo?.esChecklist ? colors.primary : colors.text.secondary}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setMenuImagenVisible((prev) => !prev)}
+          style={[styles.botonBarra, menuImagenVisible && { backgroundColor: colors.border, borderRadius: 8 }]}
+        >
+          <Ionicons
+            name="image-outline"
+            size={24}
+            color={menuImagenVisible ? colors.primary : colors.text.secondary}
           />
         </TouchableOpacity>
       </View>
@@ -328,18 +355,48 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 52,
     paddingBottom: 12,
-    borderBottomWidth: 1,
   },
-  botonGuardar: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
-  textoGuardar: { color: '#fff', fontWeight: '600' },
-  inputTitulo: { fontWeight: '700', borderBottomWidth: 1, paddingBottom: 8, marginBottom: 8 },
+  botonVolver: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#8b3ff540',
+    backgroundColor: palette.surface,
+  },
+  textoVolver: {
+    color: palette.text,
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  botonGuardar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 8,
+    backgroundColor: palette.purple,
+  },
+  textoGuardar: { color: '#fff', fontWeight: '600', fontSize: 13 },
+  inputTitulo: {
+    fontWeight: '700',
+    paddingTop: 12,
+    paddingBottom: 12,
+    lineHeight: 32,
+    borderBottomWidth: 1,
+    marginBottom: 12,
+  },
   inputTexto: {
     flex: 1,
     flexShrink: 1,
     minWidth: 0,
     textAlignVertical: 'top',
-    lineHeight: 22,
-    paddingVertical: 2,
+    lineHeight: 24,
+    paddingVertical: 4,
     minHeight: 36,
   },
   filaBloque: { width: '100%', flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
@@ -352,8 +409,14 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     minHeight: 36,
   },
-  imagen: { width: '100%', height: 200, borderRadius: 10, marginTop: 8 },
-  quitarImagen: { position: 'absolute', top: 16, right: 8, borderRadius: 999, padding: 4 },
+  imagen: { width: '100%', height: 200, borderRadius: 10 },
+  quitarImagen: { position: 'absolute', top: 8, right: 8, borderRadius: 999, padding: 4 },
+  contadorFila: {
+    alignItems: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+  },
+  contadorTexto: {},
   barraEdicion: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -361,11 +424,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
   },
-  botonBarra: { padding: 6 },
+  botonBarra: { padding: 8 },
   textoSubrayado: { fontWeight: '700', textDecorationLine: 'underline' },
   menuImagen: {
     position: 'absolute',
-    bottom: 56,
+    bottom: 100,
     left: 16,
     borderRadius: 10,
     borderWidth: 1,
@@ -375,3 +438,4 @@ const styles = StyleSheet.create({
   textoOpcion: { fontWeight: '500' },
   separador: { height: 1 },
 });
+
