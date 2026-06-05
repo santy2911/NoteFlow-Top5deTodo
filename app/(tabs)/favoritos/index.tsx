@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
-import { useRankingsStore } from '../../store/rankingsStore';
-import RankingCard from '../../components/RankingCard';
-import { Ranking } from '../../types/index';
-import { palette } from '../../constants/theme';
+import { useRankingsStore } from '../../../store/rankingsStore';
+import RankingCard from '../../../components/RankingCard';
+import { Ranking } from '../../../types/index';
+import { palette } from '../../../constants/theme';
 
 const Lista = FlashList as any;
 
@@ -88,7 +88,7 @@ export default function Favoritos() {
             renderItem={({ item }: { item: Ranking }) => (
               <RankingCard
                 ranking={item}
-                onPress={() => router.push({ pathname: '/(tabs)/rankings/[id]', params: { id: item.id, from: 'favoritos' } })}
+                onPress={() => router.push({ pathname: '/(tabs)/favoritos/[id]', params: { id: item.id } })}
                 onToggleFavorite={() => toggleFavorite(item.id)}
               />
             )}

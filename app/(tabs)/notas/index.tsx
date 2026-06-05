@@ -15,6 +15,7 @@ import { useNotasStore } from '@/store/notasStore';
 import { palette } from '@/constants/theme';
 import { Nota } from '@/types';
 import SwipeableActions from '@/components/SwipeableActions';
+import Animated, { ZoomIn } from 'react-native-reanimated';
 
 const CARD_ACCENT_COLORS = [palette.purple, palette.pink, palette.gold, '#10b981', '#3b82f6', '#f97316'];
 
@@ -51,41 +52,43 @@ export default function NotasScreen() {
   const renderNota = ({ item, index }: { item: Nota; index: number }) => {
     const accentColor = getAccentColor(index);
     return (
-      <SwipeableActions
-        pinned={item.is_pinned}
-        onTogglePinned={() => togglePinned(item.id)}
-        onDelete={() => confirmarEliminar(item)}
-      >
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => router.push(`/notas/${item.id}`)}
-          activeOpacity={0.82}
+      <Animated.View entering={ZoomIn.delay(index * 60).springify()}>
+        <SwipeableActions
+          pinned={item.is_pinned}
+          onTogglePinned={() => togglePinned(item.id)}
+          onDelete={() => confirmarEliminar(item)}
         >
-          <View style={[styles.barraSuperior, { backgroundColor: accentColor }]} />
-          <View style={styles.cardContenido}>
-            <View style={styles.tituloFila}>
-              <Text style={styles.titulo} numberOfLines={1}>{item.titulo || 'Sin título'}</Text>
-              <Ionicons name={item.is_pinned ? 'pin' : 'document-text'} size={21} color={accentColor} />
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => router.push(`/notas/${item.id}`)}
+            activeOpacity={0.82}
+          >
+            <View style={[styles.barraSuperior, { backgroundColor: accentColor }]} />
+            <View style={styles.cardContenido}>
+              <View style={styles.tituloFila}>
+                <Text style={styles.titulo} numberOfLines={1}>{item.titulo || 'Sin título'}</Text>
+                <Ionicons name={item.is_pinned ? 'pin' : 'document-text'} size={21} color={accentColor} />
+              </View>
+              {item.tieneChecklist ? (
+                <Text style={styles.contenido}>
+                  {item.checklist.filter((i) => i.completado).length}/{item.checklist.length} completados
+                </Text>
+              ) : (
+                <Text style={styles.contenido} numberOfLines={2}>
+                  {item.bloques?.find((b) => b.tipo === 'texto' && b.contenido.trim())?.contenido || 'Nota vacía'}
+                </Text>
+              )}
+              <Text style={styles.fecha}>
+                {new Date(item.updated_at).toLocaleDateString('es-ES', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </Text>
             </View>
-            {item.tieneChecklist ? (
-              <Text style={styles.contenido}>
-                {item.checklist.filter((i) => i.completado).length}/{item.checklist.length} completados
-              </Text>
-            ) : (
-              <Text style={styles.contenido} numberOfLines={2}>
-                {item.bloques?.find((b) => b.tipo === 'texto' && b.contenido.trim())?.contenido || 'Nota vacía'}
-              </Text>
-            )}
-            <Text style={styles.fecha}>
-              {new Date(item.updated_at).toLocaleDateString('es-ES', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </SwipeableActions>
+          </TouchableOpacity>
+        </SwipeableActions>
+      </Animated.View>
     );
   };
 

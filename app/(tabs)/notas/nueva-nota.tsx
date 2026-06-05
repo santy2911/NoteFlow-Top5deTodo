@@ -18,6 +18,8 @@ import { useNotasStore } from '@/store/notasStore';
 import { palette, useTheme } from '@/constants/theme';
 import { Bloque } from '@/types';
 import { nanoid } from 'nanoid/non-secure';
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { scheduleReminder } from '@/lib/notificaciones';
 
 export default function NuevaNota() {
   const router = useRouter();
@@ -30,6 +32,7 @@ export default function NuevaNota() {
   ]);
   const [imagenUri, setImagenUri] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
+  const [recordatorio, setRecordatorio] = useState<Date | null>(null);
   const [menuImagenVisible, setMenuImagenVisible] = useState(false);
   const [bloqueActivoId, setBloqueActivoId] = useState<string | null>(null);
 
@@ -122,7 +125,6 @@ export default function NuevaNota() {
     });
   };
 
-
   const borrarBloqueVacio = (bloqueId: string) => {
     const index = bloques.findIndex((b) => b.id === bloqueId);
     if (index <= 0) return;
@@ -133,6 +135,7 @@ export default function NuevaNota() {
     setBloqueActivoId(anterior.id);
     setTimeout(() => inputsRef.current[anterior.id]?.focus(), 50);
   };
+
   const abrirGaleria = async () => {
     setMenuImagenVisible(false);
     const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -161,6 +164,25 @@ export default function NuevaNota() {
     if (!resultado.canceled) setImagenUri(resultado.assets[0].uri);
   };
 
+  const abrirDatePicker = () => {
+    DateTimePickerAndroid.open({
+      value: recordatorio ?? new Date(),
+      mode: 'date',
+      minimumDate: new Date(),
+      onChange: (_, fecha) => {
+        if (!fecha) return;
+        DateTimePickerAndroid.open({
+          value: fecha,
+          mode: 'time',
+          minimumDate: new Date(),
+          onChange: (_, fechaFinal) => {
+            if (fechaFinal) setRecordatorio(fechaFinal);
+          },
+        });
+      },
+    });
+  };
+
   const guardar = async () => {
     const hayContenido = bloques.some((b) => b.contenido.trim());
     if (!titulo.trim() && !hayContenido) return;
@@ -178,6 +200,9 @@ export default function NuevaNota() {
         checklist: [],
         bloques: bloquesParaGuardar,
       });
+      if (recordatorio && recordatorio > new Date()) {
+        await scheduleReminder(titulo.trim() || 'Nota sin título', recordatorio);
+      }
       volverANotas();
     } catch {
       Alert.alert('Error', 'No se pudo guardar la nota.');
@@ -197,9 +222,7 @@ export default function NuevaNota() {
       <View style={styles.cabecera}>
         <TouchableOpacity style={styles.botonVolver} onPress={volverANotas}>
           <Ionicons name="arrow-back" size={18} color={palette.purpleLight} />
-          <Text style={styles.textoVolver}>
-            Volver
-          </Text>
+          <Text style={styles.textoVolver}>Volver</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={guardar}
@@ -284,6 +307,40 @@ export default function NuevaNota() {
           </View>
         )}
       </ScrollView>
+
+      <View style={{ marginTop: 8, marginBottom: 4, paddingHorizontal: spacing.lg }}>
+        <TouchableOpacity
+          onPress={abrirDatePicker}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            alignSelf: 'flex-start',
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: recordatorio ? colors.primary : colors.border,
+            backgroundColor: colors.surface,
+          }}
+        >
+          <Ionicons
+            name="alarm-outline"
+            size={18}
+            color={recordatorio ? colors.primary : colors.text.secondary}
+          />
+          <Text style={{ fontWeight: '500', color: recordatorio ? colors.primary : colors.text.secondary, fontSize: typography.sizes.sm }}>
+            {recordatorio
+              ? recordatorio.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })
+              : 'Añadir recordatorio'}
+          </Text>
+          {recordatorio && (
+            <TouchableOpacity onPress={() => setRecordatorio(null)}>
+              <Ionicons name="close-circle" size={16} color={colors.text.muted} />
+            </TouchableOpacity>
+          )}
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.contadorFila}>
         <Text style={[styles.contadorTexto, { color: colors.text.muted, fontSize: typography.sizes.xs }]}>
@@ -438,4 +495,3 @@ const styles = StyleSheet.create({
   textoOpcion: { fontWeight: '500' },
   separador: { height: 1 },
 });
-

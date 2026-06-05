@@ -7,10 +7,11 @@ import {
   TouchableOpacity,
   TextInput as RNTextInput,
   Text as RNText,
+  ScrollView,
 } from 'react-native';
 import { Text, Button, HelperText } from 'react-native-paper';
 import { router } from 'expo-router';
-import auth from '@react-native-firebase/auth';
+import { getAuth, signInWithEmailAndPassword } from '@react-native-firebase/auth';
 import { useTheme } from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -30,7 +31,8 @@ export default function LoginScreen() {
     try {
       setCargando(true);
       setError('');
-      await auth().signInWithEmailAndPassword(email, password);
+      const auth = getAuth();
+      await signInWithEmailAndPassword(auth, email, password);
       router.replace('/(tabs)/rankings');
     } catch (e: any) {
       setError('Correo o contraseña incorrectos');
@@ -42,9 +44,13 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={[styles.contenedor, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.formulario}>
+      <ScrollView
+        contentContainerStyle={styles.formulario}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={[styles.logoWrap, { backgroundColor: colors.primary }]}>
           <RNText style={styles.logoEmoji}>🏆</RNText>
         </View>
@@ -113,7 +119,7 @@ export default function LoginScreen() {
             <Text style={{ color: colors.primary, fontSize: 13 }}>Regístrate</Text>
           </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -124,7 +130,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   formulario: {
+    flexGrow: 1,
+    justifyContent: 'center',
     paddingHorizontal: 28,
+    paddingVertical: 40,
   },
   logoWrap: {
     width: 72,

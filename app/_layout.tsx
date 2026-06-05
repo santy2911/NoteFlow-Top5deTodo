@@ -2,7 +2,8 @@ import { Stack } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
 import { useEffect, useState } from 'react';
 import { useRankingsStore } from '../store/rankingsStore';
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import { getAuth, onAuthStateChanged } from '@react-native-firebase/auth';
+import { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import { router } from 'expo-router';
 
 export default function RootLayout() {
@@ -10,7 +11,8 @@ export default function RootLayout() {
   const [usuario, setUsuario] = useState<FirebaseAuthTypes.User | null | undefined>(undefined);
 
   useEffect(() => {
-    const unsuscribir = auth().onAuthStateChanged((u) => {
+    const auth = getAuth();
+    const unsuscribir = onAuthStateChanged(auth, (u) => {
       setUsuario(u);
     });
     return unsuscribir;

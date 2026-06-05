@@ -7,11 +7,12 @@ import {
   TouchableOpacity,
   TextInput as RNTextInput,
   Text as RNText,
+  ScrollView,
 } from 'react-native';
 import { Text, Button, HelperText } from 'react-native-paper';
 import { router } from 'expo-router';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import { getAuth, createUserWithEmailAndPassword } from '@react-native-firebase/auth';
+import { getFirestore, collection, doc, setDoc, serverTimestamp } from '@react-native-firebase/firestore';
 import { useTheme } from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -43,14 +44,16 @@ export default function RegistroScreen() {
     try {
       setCargando(true);
       setError('');
-      const credencial = await auth().createUserWithEmailAndPassword(email, password);
+      const auth = getAuth();
+      const credencial = await createUserWithEmailAndPassword(auth, email, password);
       const uid = credencial.user.uid;
 
-      await firestore().collection('usuarios').doc(uid).set({
+      const db = getFirestore();
+      await setDoc(doc(db, 'usuarios', uid), {
         nombre,
         email,
         avatarUrl: null,
-        creadoEn: firestore.FieldValue.serverTimestamp(),
+        creadoEn: serverTimestamp(),
       });
 
       router.replace('/(tabs)/rankings');
@@ -70,9 +73,13 @@ export default function RegistroScreen() {
   return (
     <KeyboardAvoidingView
       style={[styles.contenedor, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.formulario}>
+      <ScrollView
+        contentContainerStyle={styles.formulario}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={[styles.logoWrap, { backgroundColor: colors.primary }]}>
           <RNText style={styles.logoEmoji}>✨</RNText>
         </View>
@@ -128,10 +135,7 @@ export default function RegistroScreen() {
                   key={i}
                   style={[
                     styles.fuerzaBar,
-                    {
-                      backgroundColor:
-                        fuerza.nivel >= i ? fuerza.color : colors.border,
-                    },
+                    { backgroundColor: fuerza.nivel >= i ? fuerza.color : colors.border },
                   ]}
                 />
               ))}
@@ -165,7 +169,7 @@ export default function RegistroScreen() {
             <Text style={{ color: colors.primary, fontSize: 13 }}>Inicia sesión</Text>
           </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -176,8 +180,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   formulario: {
+    flexGrow: 1,
+    justifyContent: 'center',
     paddingHorizontal: 28,
-  },
+    paddingVertical: 40,
+},
   logoWrap: {
     width: 72,
     height: 72,

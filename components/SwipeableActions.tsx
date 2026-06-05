@@ -1,12 +1,12 @@
 import React, { ReactNode, useRef } from 'react';
 import {
-  Animated,
   PanResponder,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { palette } from '../constants/theme';
@@ -27,17 +27,12 @@ export default function SwipeableActions({
   onTogglePinned,
   onDelete,
 }: SwipeableActionsProps) {
-  const translateX = useRef(new Animated.Value(0)).current;
+  const translateX = useSharedValue(0);
   const currentX = useRef(0);
 
   const animateTo = (toValue: number) => {
     currentX.current = toValue;
-    Animated.spring(translateX, {
-      toValue,
-      useNativeDriver: true,
-      tension: 90,
-      friction: 12,
-    }).start();
+    translateX.value = withSpring(toValue, { stiffness: 90, damping: 12 });
   };
 
   const panResponder = useRef(
@@ -46,7 +41,7 @@ export default function SwipeableActions({
         Math.abs(gesture.dx) > 8 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
       onPanResponderMove: (_, gesture) => {
         const nextX = Math.max(-ACTIONS_WIDTH, Math.min(0, currentX.current + gesture.dx));
-        translateX.setValue(nextX);
+        translateX.value = nextX;
       },
       onPanResponderRelease: (_, gesture) => {
         const nextX = currentX.current + gesture.dx;
@@ -67,6 +62,10 @@ export default function SwipeableActions({
     onDelete();
     animateTo(0);
   };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
 
   return (
     <View style={styles.wrapper}>
@@ -89,7 +88,7 @@ export default function SwipeableActions({
         </TouchableOpacity>
       </View>
       <Animated.View
-        style={[styles.foreground, { transform: [{ translateX }] }]}
+        style={[styles.foreground, animatedStyle]}
         {...panResponder.panHandlers}
       >
         {children}

@@ -16,7 +16,7 @@ function getCategoryColor(category: string): string {
 const MEDAL_COLORS = ['#f59e0b', '#94a3b8', '#cd7c3a'];
 const MEDAL_EMOJIS = ['🏅', '🥈', '🥉'];
 
-export default function DetalleRanking() {
+export default function DetalleRankingFavoritos() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { rankings, deleteRanking } = useRankingsStore();
